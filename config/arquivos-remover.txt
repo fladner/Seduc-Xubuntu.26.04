@@ -1,0 +1,8 @@
+# Arquivos apagados da imagem depois do overlay e antes do apt.
+# Um caminho absoluto por linha; linhas com # são ignoradas.
+# PPA mozillateam: o Firefox passa a vir de packages.mozilla.org
+/etc/apt/sources.list.d/mozillateam.sources
+/etc/apt/preferences.d/mozillateam.pref
+/etc/apt/keyrings/mozillateam.gpg
+# Atalho duplicado do Aruba (nome com erro de digitação); o certo vem do overlay
+/usr/local/share/applications/onboard-laucher.desktop

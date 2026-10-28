@@ -1,0 +1,5 @@
+# Gerados pelo build
+work/
+out/
+# .deb de terceiros não são versionados (licenças/tamanho): veja debs/LEIAME.txt
+debs/*.deb

@@ -1,0 +1,10 @@
+# Pacotes removidos (purge) no chroot antes da instalação.
+# Um por linha; linhas com # são ignoradas.
+thunderbird
+thunderbird-locale-pt
+thunderbird-locale-pt-br
+thunderbird-locale-pt-pt
+# Firefox do PPA mozillateam: reinstalado do repositório oficial da Mozilla
+xul-ext-ubufox
+firefox-locale-pt
+firefox

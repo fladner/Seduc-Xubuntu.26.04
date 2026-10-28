@@ -1,0 +1,9 @@
+# Pacotes instalados no chroot durante o build (repositórios Ubuntu, Mozilla e NetMonitor).
+# Um por linha; linhas com # são ignoradas. Os .deb de debs/ são instalados junto.
+hplip-gui
+seduc-netmonitor-agent
+synaptic
+apt-xapian-index
+anydesk
+firefox
+firefox-l10n-pt-br

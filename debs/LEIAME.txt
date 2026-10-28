@@ -1,0 +1,16 @@
+.deb extras instalados pelo build.sh (todos os *.deb desta pasta, via apt no chroot).
+Não ficam no Git: baixe das fontes oficiais abaixo e confira o SHA-256.
+
+Epson (https://download-center.epson.com, região Brasil, Linux Deb x64):
+  L1800      epson-inkjet-printer-201312w_1.0.2-1_amd64.deb
+             f3fdc7c9e86d371eb6a24e90e0724d8c055d4a212f05255dd9be1c297f2e1b67
+  L380/L382  epson-inkjet-printer-201601w_1.0.2-1_amd64.deb
+             54866a775f1891d94e2615290bb497256eb336ed0f3634c28931cc9b993db89e
+  L800       epson-inkjet-printer-l800_1.0.2-1_amd64.deb
+             7d6bd4f3ec4ef176beefdba9bd6f63e9ddff41770a95da84cf26a52248b8b9ef
+
+RustDesk (https://github.com/rustdesk/rustdesk/releases):
+  rustdesk-1.5.0-x86_64.deb
+             4e2b9701d25a7ef373f3d09bda584a37d6902f97a6ab15f2e86d4a5783e2a0ec
+
+Conferir:  sha256sum *.deb

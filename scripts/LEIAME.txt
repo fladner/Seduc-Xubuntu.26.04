@@ -1,0 +1,6 @@
+Versões publicadas do seduc_setup.sh, lidas pelas máquinas instaladas:
+  https://raw.githubusercontent.com/fladner/Seduc-Xubuntu.26.04/main/scripts/seduc_setup.sh
+  https://raw.githubusercontent.com/fladner/Seduc-Xubuntu.26.04/main/scripts/seduc_setup.sh.asc
+
+Não edite aqui: edite overlay/usr/local/seduc/scripts/seduc_setup.sh, aumente
+SCRIPT_VERSION e rode tools/publicar-seduc-setup.sh <chave> . (gera os dois arquivos).

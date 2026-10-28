@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Exec=/usr/local/seduc/scripts/welcome.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=Boas-vindas SEDUC
+Comment=Configuração inicial do computador e criação de usuários
+OnlyShowIn=XFCE;

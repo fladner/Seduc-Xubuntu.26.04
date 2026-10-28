@@ -1,0 +1,4 @@
+// SEDUC: atualizações automáticas também para o Firefox da Mozilla
+Unattended-Upgrade::Origins-Pattern {
+    "site=packages.mozilla.org";
+};

@@ -1,0 +1,14 @@
+[Unit]
+Description=SEDUC - corrige rede link-local gravada pelo instalador
+# Roda antes do NetworkManager para que ele já suba com a conexão DHCP
+Before=NetworkManager.service network-pre.target
+Wants=network-pre.target
+After=local-fs.target
+ConditionPathExists=/etc/netplan/00-installer-config.yaml
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/seduc/scripts/fix_netplan_instalador.sh
+
+[Install]
+WantedBy=multi-user.target

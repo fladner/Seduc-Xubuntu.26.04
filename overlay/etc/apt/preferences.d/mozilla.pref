@@ -1,0 +1,4 @@
+# Firefox sempre do repositório da Mozilla, nunca o pacote de transição para snap do Ubuntu
+Package: *
+Pin: origin packages.mozilla.org
+Pin-Priority: 1000

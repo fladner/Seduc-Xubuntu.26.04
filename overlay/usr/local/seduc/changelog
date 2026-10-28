@@ -1,0 +1,29 @@
+## 1.1-0 - 28/10/2026
+    - Welcome reescrito: boas-vindas ao administrador e escolha dos usuários
+      (aluno, núcleo gestor e apoio), com senha padrão igual ao login
+    - Removidos do welcome o perfil CREDE e a consulta de INEP
+    - Novo criar_usuarios.sh, executado uma vez via pkexec
+    - Perfil laboratório: corrigidos caminhos do XFCE (/etc/xdg/xdg-xubuntu),
+      do atalho do Chrome e do papel de parede do aluno
+    - Aluno passa a entrar com senha (sai do grupo nopasswdlogin)
+    - Perfil laboratório não troca mais o tema Plymouth (fica o tema SEDUC);
+      antes falhava com código 2 e não terminava a configuração
+    - Protetor de tela e desligamento da tela só depois de 1 hora
+    - Adicionado hplip-gui
+    - Rede: instalação sem cabo deixava a placa em "Apenas conexão local";
+      novo serviço seduc-fix-netplan corrige no boot
+    - Adicionado o agente SEDUC NetMonitor (repositório FladnerNetworks)
+    - Atualizações automáticas: busca às 07:30 e instalação às 09:00, todo dia;
+      se o computador estava desligado, roda logo após ligar
+    - Scripts SEDUC passam a pertencer só ao root (antes o grupo adm alterava)
+    - Adicionados RustDesk 1.5.0, AnyDesk, Synaptic e apt-xapian-index
+    - Firefox oficial da Mozilla (packages.mozilla.org) com atualização
+      automática; removido o PPA mozillateam
+    - Removido o Thunderbird
+    - HPE Aruba Onboard na categoria Internet do menu (atalho duplicado removido)
+    - Informações do Sistema atualizadas (distro, versão, compilação, créditos)
+    - seduc_setup.sh: não remove mais o Synaptic; atualizador passa a usar o
+      GitHub com assinatura GPG e só aceita versão maior
+
+## 1.0-0 - 23/04/2026
+    - Versão inicial com suporte básico ao instalador

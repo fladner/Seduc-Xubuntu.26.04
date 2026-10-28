@@ -1,0 +1,6 @@
+# Firefox oficial da Mozilla (substitui o PPA mozillateam da v1.0)
+Types: deb
+URIs: https://packages.mozilla.org/apt
+Suites: mozilla
+Components: main
+Signed-By: /etc/apt/keyrings/packages.mozilla.org.asc

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=HPE Aruba Networking Onboard
+Exec=/usr/share/aruba-onboard/bin/onboard-ui %u
+Icon=/usr/share/aruba-onboard/main.png
+StartupNotify=false
+MimeType=x-scheme-handler/arubadp;
+StartupWMClass=onboard-ui
+# SEDUC: categoria Internet no menu Whisker
+Categories=Network;
