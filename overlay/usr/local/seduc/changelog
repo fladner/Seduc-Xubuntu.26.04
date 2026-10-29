@@ -1,3 +1,15 @@
+## 1.2-0 - 29/10/2026
+    - Todos os pacotes atualizados para a versão mais nova dos repositórios
+      na compilação (o kernel acompanha a ISO e atualiza depois de instalado)
+    - Perfil laboratório: não falha mais quando o xfce4-panel.xml não existe
+      (Xubuntu 26.04) e pode ser repetido sem perder a configuração original
+    - Certificado do proxy SEDUC (ProxyCert.crt) no sistema, Firefox e Chrome
+    - Ícone do HP (hp-systray) sempre oculto para usuários novos
+    - trava_perfil.sh (seduc-trava-perfil.service): a cada boot devolve o
+      padrão de painel, menu, tema, ícones, janelas, atalhos, energia,
+      protetor de tela, teclado e idioma a todos os usuários
+    - Perfil laboratório deixa de trocar o tema Plymouth também ao desativar
+
 ## 1.1-0 - 28/10/2026
     - Welcome reescrito: boas-vindas ao administrador e escolha dos usuários
       (aluno, núcleo gestor e apoio), com senha padrão igual ao login
@@ -24,13 +36,6 @@
     - Informações do Sistema atualizadas (distro, versão, compilação, créditos)
     - seduc_setup.sh: não remove mais o Synaptic; atualizador passa a usar o
       GitHub com assinatura GPG e só aceita versão maior
-    - Perfil laboratório: não falha mais quando o xfce4-panel.xml não existe
-      (Xubuntu 26.04) e pode ser repetido sem perder a configuração original
-    - Certificado do proxy SEDUC (ProxyCert.crt) no sistema, Firefox e Chrome
-    - Ícone do HP (hp-systray) sempre oculto para usuários novos
-    - trava_perfil.sh (seduc-trava-perfil.service): a cada boot devolve o
-      padrão de painel, menu, tema, ícones, janelas, atalhos, energia,
-      protetor de tela, teclado e idioma a todos os usuários
 
 ## 1.0-0 - 23/04/2026
     - Versão inicial com suporte básico ao instalador

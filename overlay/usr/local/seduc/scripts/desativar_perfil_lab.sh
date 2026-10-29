@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Atualização 21/01/2026
-SCRIPT_VERSION="1.1-0"
+SCRIPT_VERSION="1.2-0"
 
 # Verifica se o ambiente é live
 if grep -q "casper" /proc/cmdline; then

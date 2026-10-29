@@ -216,6 +216,22 @@ instalar_pacotes() {
     log "Instalando: ${LISTA[*]} ${CHROOT_DEBS[*]}"
     chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
         apt-get install -y --no-install-recommends "${LISTA[@]}" "${CHROOT_DEBS[@]}"
+
+    # Atualiza tudo para a versão mais nova dos repositórios. O kernel fica:
+    # o vmlinuz/initrd da ISO precisam bater com os módulos do squashfs.
+    # Arquivos de configuração alterados pelo overlay são mantidos (confold).
+    local KERNEL=() K
+    for K in linux-generic linux-image-generic linux-headers-generic; do
+        if chroot "$ROOTFS" dpkg-query -W -f='${db:Status-Abbrev}' "$K" 2>/dev/null | grep -q '^ii'; then
+            KERNEL+=("$K")
+        fi
+    done
+    [[ ${#KERNEL[@]} -gt 0 ]] && chroot "$ROOTFS" apt-mark hold "${KERNEL[@]}"
+    log "Atualizando todos os pacotes (kernel mantido: ${KERNEL[*]})"
+    chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
+        apt-get full-upgrade -y \
+        -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold
+    [[ ${#KERNEL[@]} -gt 0 ]] && chroot "$ROOTFS" apt-mark unhold "${KERNEL[@]}"
     chroot "$ROOTFS" apt-get clean
 
     # Certificados de usr/local/share/ca-certificates (proxy SEDUC) no console
