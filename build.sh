@@ -217,6 +217,13 @@ instalar_pacotes() {
     chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
         apt-get install -y --no-install-recommends "${LISTA[@]}" "${CHROOT_DEBS[@]}"
 
+    # O pacote do NetMonitor traz o próprio .sources para o mesmo repositório:
+    # com o temporário junto o apt recusa (Signed-By conflitante)
+    if [[ -f "$ROOTFS/etc/apt/sources.list.d/fladnernetworks-netmonitor.sources" ]]; then
+        rm -f "$ROOTFS/etc/apt/sources.list.d/seduc-build-netmonitor.sources" \
+              "$ROOTFS/etc/apt/seduc-build-netmonitor.gpg"
+    fi
+
     # Atualiza tudo para a versão mais nova dos repositórios. O kernel fica:
     # o vmlinuz/initrd da ISO precisam bater com os módulos do squashfs.
     # Arquivos de configuração alterados pelo overlay são mantidos (confold).
