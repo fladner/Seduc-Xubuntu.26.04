@@ -13,6 +13,8 @@
     - Papel de parede e fundo da tela de login não mudam mais: o perfil
       laboratório mantém os da SEDUC e a trava de perfil não mexe na área
       de trabalho
+    - Menu Whisker: favorito do Google Chrome aponta para com.google.Chrome
+      (o atalho antigo some no perfil laboratório)
 
 ## 1.1-0 - 28/10/2026
     - Welcome reescrito: boas-vindas ao administrador e escolha dos usuários
