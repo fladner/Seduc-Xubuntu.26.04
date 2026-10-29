@@ -1,0 +1,17 @@
+{
+  "policies": {
+    "Preferences": {
+      "signon.rememberSignons": true
+    },
+    "Extensions": {
+      "Install": [
+        "/usr/share/firefox/distribution/extensions/1c50b15f-a16c-4246-b39e-7d8ec1733926.xpi"
+      ]
+    },
+    "Certificates": {
+      "Install": [
+        "/usr/local/share/ca-certificates/ProxyCert.crt"
+      ]
+    }
+  }
+}

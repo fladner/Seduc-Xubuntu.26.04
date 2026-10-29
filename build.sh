@@ -218,6 +218,9 @@ instalar_pacotes() {
         apt-get install -y --no-install-recommends "${LISTA[@]}" "${CHROOT_DEBS[@]}"
     chroot "$ROOTFS" apt-get clean
 
+    # Certificados de usr/local/share/ca-certificates (proxy SEDUC) no console
+    chroot "$ROOTFS" update-ca-certificates
+
     # A imagem é clonada em todas as máquinas: nenhuma identidade pode ir junto
     rm -f "$ROOTFS"/etc/netmonitor-agent/{installation-id,token,config.json}
     rm -rf "$ROOTFS"/root/.config/rustdesk

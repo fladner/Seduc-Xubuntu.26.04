@@ -26,6 +26,8 @@
       GitHub com assinatura GPG e só aceita versão maior
     - Perfil laboratório: não falha mais quando o xfce4-panel.xml não existe
       (Xubuntu 26.04) e pode ser repetido sem perder a configuração original
+    - Certificado do proxy SEDUC (ProxyCert.crt) no sistema, Firefox e Chrome
+    - Ícone do HP (hp-systray) sempre oculto para usuários novos
 
 ## 1.0-0 - 23/04/2026
     - Versão inicial com suporte básico ao instalador
