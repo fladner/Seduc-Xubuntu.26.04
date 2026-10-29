@@ -102,6 +102,13 @@ conf_hostname() {
     fi
 }
 
+# Guarda a configuração original em <arquivo>.bkp (só na primeira vez e só se existir)
+backup_conf() {
+    if [ -f "$1" ] && [ ! -f "$1.bkp" ]; then
+        cp "$1" "$1.bkp"
+    fi
+}
+
 # Aplica as configurações personalizadas do XFCE
 conf_desktop() {
        
@@ -110,26 +117,28 @@ conf_desktop() {
 
     # Backup xfce4-desktop
     local XFCE_DESKTOP_CONF="/etc/xdg/xdg-xubuntu/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml"
-    local XFCE_DESKTOP_BACKUP="${XFCE_DESKTOP_CONF}.bkp"
-    [ ! -f "$XFCE_DESKTOP_BACKUP" ] && cp "$XFCE_DESKTOP_CONF" "$XFCE_DESKTOP_BACKUP"
+    backup_conf "$XFCE_DESKTOP_CONF"
     
     # Backup lightdm-gtk-greeter
     local GREETER_CONF="/etc/lightdm/lightdm-gtk-greeter.conf"
-    local GREETER_BACKUP="${GREETER_CONF}.bkp"
-    [ ! -f "$GREETER_BACKUP" ] && cp "$GREETER_CONF" "$GREETER_BACKUP"
+    backup_conf "$GREETER_CONF"
     
     # Backup do xfce4-panel
     local PANEL_XML="/etc/xdg/xdg-xubuntu/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml"
-    local PANEL_XML_BACKUP="${PANEL_XML}.bkp"
     local DEFAULT_XML="/etc/xdg/xdg-xubuntu/xfce4/panel/default.xml"
-    local DEFAULT_XML_BACKUP="${DEFAULT_XML}.bkp"
-    [ ! -f "$PANEL_XML_BACKUP"  ] && cp "$PANEL_XML" "$PANEL_XML_BACKUP" 
-    [ ! -f "$DEFAULT_XML_BACKUP" ] && cp "$DEFAULT_XML" "$DEFAULT_XML_BACKUP"
+    # O Xubuntu 26.04 não traz xfce4-panel.xml: a marca .ausente avisa o
+    # desativar_perfil_lab.sh para apagar o arquivo criado aqui
+    if [ ! -f "$PANEL_XML" ] && [ ! -f "$PANEL_XML.bkp" ]; then
+        touch "$PANEL_XML.ausente"
+    fi
+    if [ ! -f "$PANEL_XML.ausente" ]; then
+        backup_conf "$PANEL_XML"
+    fi
+    backup_conf "$DEFAULT_XML"
     
     # Backup do Kiosk
     local KIOSK_FILE="/etc/xdg/xfce4/kiosk/kioskrc"
-    local KIOSK_BACKUP="${KIOSK_FILE}.bkp"
-    [ ! -f "$KIOSK_BACKUP" ] && cp "$KIOSK_FILE" "$KIOSK_BACKUP"
+    backup_conf "$KIOSK_FILE"
     
     # Atualizando o Wallpaper
     BACKDROP_SRC="/usr/local/seduc/backdrops/aluno/xubuntu-aluno.png"

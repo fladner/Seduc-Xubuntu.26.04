@@ -67,7 +67,7 @@ start_spinner
 
     # Restaura o papel de parede
     GREETER_DESKTOP_CONF="/etc/lightdm/lightdm-gtk-greeter.conf"
-    GREETER_BACKUP_CONF="{$GREETER_DESKTOP_CONF}.bkp"
+    GREETER_BACKUP_CONF="${GREETER_DESKTOP_CONF}.bkp"
     XFCE_DESKTOP_CONF="/etc/xdg/xdg-xubuntu/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml"
     XFCE_BACKUP_CONF="${XFCE_DESKTOP_CONF}.bkp"
     CHROME_LOCAL_CONF="/usr/local/share/applications/com.google.Chrome.desktop"
@@ -93,20 +93,19 @@ start_spinner
     [ -f "$CHROME_LOCAL_CONF" ] && rm "$CHROME_LOCAL_CONF"
     
     # Restaura o xfce4-panel.xml
-    [ -f "$PANEL_XML_BACKUP" ] && cp "$PANEL_XML_BACKUP" "$PANEL_XML"
+    # .ausente: o arquivo não existia antes do perfil laboratório
+    if [ -f "$PANEL_XML_BACKUP" ]; then
+        cp "$PANEL_XML_BACKUP" "$PANEL_XML"
+    elif [ -f "$PANEL_XML.ausente" ]; then
+        rm -f "$PANEL_XML"
+    fi
     [ -f "$DEFAULT_XML_BACKUP" ] && cp "$DEFAULT_XML_BACKUP" "$DEFAULT_XML"
     
     # Restaura o kiosk
-    [ -f "$KIOSK_BACKUP" ] && cp "$KIOSK_BACKUP" "$KIOSK_FILE"
-
-    # Restaura o plymouth padrão
-    DESIRED_PLYMOUTH="/usr/share/plymouth/themes/seduc/seduc.plymouth"
-    CURRENT_PLYMOUTH=$(readlink -f /etc/alternatives/default.plymouth)
-     
-    if [[ "$CURRENT_PLYMOUTH" != "$DESIRED_PLYMOUTH" ]]; then
-        update-alternatives --set default.plymouth "$DESIRED_PLYMOUTH" >/dev/null 2>&1
-        update-initramfs -u -k all >/dev/null 2>&1
+    if [ -f "$KIOSK_BACKUP" ]; then
+        cp "$KIOSK_BACKUP" "$KIOSK_FILE"
     fi
+
 } || {
         stop_spinner
         echo "❌ Erro geral ao restaurar o sistema."
@@ -151,7 +150,7 @@ stop_spinner
 echo "✔ Ok"
 
 rm -f "/usr/local/seduc/flags/pos-install"
-rm -f "$DEFAULT_XML_BACKUP" "$PANEL_XML_BACKUP" "$XFCE_BACKUP_CONF" "$GREETER_BACKUP_CONF" "$KIOSK_BACKUP"
+rm -f "$DEFAULT_XML_BACKUP" "$PANEL_XML_BACKUP" "$PANEL_XML.ausente" "$XFCE_BACKUP_CONF" "$GREETER_BACKUP_CONF" "$KIOSK_BACKUP"
 
 echo "O sistema irá reiniciar em 10 segundos. Pressione Ctrl+C para cancelar."
 sleep 10

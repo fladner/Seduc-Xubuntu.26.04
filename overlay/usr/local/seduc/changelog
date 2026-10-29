@@ -24,6 +24,8 @@
     - Informações do Sistema atualizadas (distro, versão, compilação, créditos)
     - seduc_setup.sh: não remove mais o Synaptic; atualizador passa a usar o
       GitHub com assinatura GPG e só aceita versão maior
+    - Perfil laboratório: não falha mais quando o xfce4-panel.xml não existe
+      (Xubuntu 26.04) e pode ser repetido sem perder a configuração original
 
 ## 1.0-0 - 23/04/2026
     - Versão inicial com suporte básico ao instalador
