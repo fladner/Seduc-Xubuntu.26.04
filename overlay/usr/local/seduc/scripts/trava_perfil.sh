@@ -4,7 +4,8 @@
 # login, devolve o padrão da SEDUC para painel, menu, tema, ícones, bordas e
 # efeitos das janelas, atalhos, energia, protetor de tela, teclado e idioma.
 # Baseado no trava-tema.sh (Carlos Renê - CREDE16 / Tadeu Fladiner - ASTIN).
-# O papel de parede fica com o xfce4_backdrop_monitor.
+# A área de trabalho (xfce4-desktop) não é tocada: o papel de parede não muda
+# e fica com o xfce4_backdrop_monitor.
 # Uso: trava_perfil.sh [raiz]   (raiz só para teste; padrão /)
 
 set -euo pipefail
@@ -24,7 +25,6 @@ LOG="$RAIZ/usr/local/seduc/logs/trava_perfil.log"
 CANAIS=(
     xsettings                   # tema, ícones, fontes, cursor
     xfwm4                       # bordas, tema e efeitos das janelas, bordas da tela
-    xfce4-desktop               # ícones e menu da área de trabalho
     xfce4-keyboard-shortcuts    # atalhos de teclado
     xfce4-screensaver           # protetor de tela (60 minutos)
     xfce4-power-manager         # energia e desligamento da tela

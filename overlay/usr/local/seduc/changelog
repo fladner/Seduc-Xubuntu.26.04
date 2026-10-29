@@ -10,6 +10,9 @@
       protetor de tela, teclado e idioma a todos os usuários
     - Perfil laboratório deixa de trocar o tema Plymouth também ao desativar
     - Menu de boot (GRUB) da ISO com tradução revisada e acentuação
+    - Papel de parede e fundo da tela de login não mudam mais: o perfil
+      laboratório mantém os da SEDUC e a trava de perfil não mexe na área
+      de trabalho
 
 ## 1.1-0 - 28/10/2026
     - Welcome reescrito: boas-vindas ao administrador e escolha dos usuários

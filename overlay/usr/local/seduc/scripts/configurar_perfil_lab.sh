@@ -140,13 +140,8 @@ conf_desktop() {
     local KIOSK_FILE="/etc/xdg/xfce4/kiosk/kioskrc"
     backup_conf "$KIOSK_FILE"
     
-    # Atualizando o Wallpaper
-    BACKDROP_SRC="/usr/local/seduc/backdrops/aluno/xubuntu-aluno.png"
-    DEST="/usr/share/xfce4/backdrops/default.png"
-    ln -sf "$BACKDROP_SRC" "$DEST"
-
-    # lightdm-gtk-greeter.conf
-    sed -i 's|xubuntu-lightdm-seduc.png|xubuntu-lightdm-aluno.png|g' "$GREETER_CONF"
+    # O papel de parede da área de trabalho e o fundo da tela de login
+    # continuam os da SEDUC (o laboratório não troca mais para os do aluno)
 
     # kiosk
     printf '%s\n' \
