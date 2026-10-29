@@ -28,6 +28,9 @@
       (Xubuntu 26.04) e pode ser repetido sem perder a configuração original
     - Certificado do proxy SEDUC (ProxyCert.crt) no sistema, Firefox e Chrome
     - Ícone do HP (hp-systray) sempre oculto para usuários novos
+    - trava_perfil.sh (seduc-trava-perfil.service): a cada boot devolve o
+      padrão de painel, menu, tema, ícones, janelas, atalhos, energia,
+      protetor de tela, teclado e idioma a todos os usuários
 
 ## 1.0-0 - 23/04/2026
     - Versão inicial com suporte básico ao instalador

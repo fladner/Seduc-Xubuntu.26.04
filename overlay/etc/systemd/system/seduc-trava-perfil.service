@@ -1,0 +1,11 @@
+[Unit]
+Description=SEDUC - restaura o perfil XFCE padrão de todos os usuários
+After=local-fs.target home.mount
+Before=display-manager.service systemd-user-sessions.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/seduc/scripts/trava_perfil.sh
+
+[Install]
+WantedBy=multi-user.target
