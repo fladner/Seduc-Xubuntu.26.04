@@ -9,6 +9,8 @@
 #      reaproveitando o boot (BIOS/UEFI) da ISO original
 #
 # Uso: sudo ./build.sh [ISO_BASE] [VERSAO]
+#      sudo RETOMAR=1 ./build.sh   refaz só do passo 4 em diante, usando o
+#                                  work/build/rootfs da última compilação
 
 set -euo pipefail
 
@@ -308,9 +310,17 @@ gerar_iso() {
 trap limpar_chroot EXIT
 
 check_requisitos
-extrair
-aplicar_overlay
-instalar_pacotes
+if [[ "${RETOMAR:-0}" == "1" ]]; then
+    if [[ ! -x "$ROOTFS/usr/bin/dpkg" || ! -f "$CASPER/install-sources.yaml" ]]; then
+        log "ERRO: RETOMAR=1 sem rootfs pronto em $BUILD. Rode sem RETOMAR."
+        exit 1
+    fi
+    log "Retomando com o rootfs existente (sem extrair, overlay nem pacotes)"
+else
+    extrair
+    aplicar_overlay
+    instalar_pacotes
+fi
 gerar_casper
 atualizar_md5
 gerar_iso
