@@ -9,6 +9,7 @@ O `build.sh` parte da ISO anterior, aplica as mudanças deste repositório e ger
 |---|---|
 | `build.sh` | Gera a ISO (precisa de root e internet) |
 | `overlay/` | Arquivos copiados por cima do sistema, com os mesmos caminhos (`/etc`, `/usr/local/seduc`...) |
+| `iso/` | Arquivos que substituem os da ISO no mesmo caminho (menu de boot `boot/grub/`) |
 | `config/pacotes-instalar.txt` | Pacotes instalados no build |
 | `config/pacotes-remover.txt` | Pacotes removidos no build |
 | `config/arquivos-remover.txt` | Arquivos apagados da imagem |
