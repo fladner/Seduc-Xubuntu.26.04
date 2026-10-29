@@ -30,6 +30,8 @@ CHAVE_ATUALIZADOR="$PROJETO/config/seduc-updates.gpg"
 # Chave do repositório do NetMonitor; o pacote instala a própria cópia e o .sources
 CHAVE_NETMONITOR="$PROJETO/config/fladnernetworks-archive-keyring.gpg"
 DEBS="$PROJETO/debs"
+# Arquivos que substituem os da ISO no mesmo caminho (ex.: iso/boot/grub/grub.cfg)
+ISO_ARQUIVOS="$PROJETO/iso"
 BUILD="$PROJETO/work/build"
 ROOTFS="$BUILD/rootfs"
 CASPER="$BUILD/casper"
@@ -274,6 +276,12 @@ gerar_casper() {
         -noappend -comp xz -Xbcj x86 -b 1M
 }
 
+# Caminhos relativos dos arquivos em iso/
+lista_iso_arquivos() {
+    [[ -d "$ISO_ARQUIVOS" ]] || return 0
+    (cd "$ISO_ARQUIVOS" && find . -type f -printf '%P\n' | sort)
+}
+
 atualizar_md5() {
     log "Atualizando md5sum.txt"
     local ARQ SOMA
@@ -283,6 +291,10 @@ atualizar_md5() {
     done
     SOMA=$(md5sum "$BUILD/info" | cut -d' ' -f1)
     sed -i "s|^[0-9a-f]\{32\}  \./\.disk/info\$|$SOMA  ./.disk/info|" "$BUILD/md5sum.txt"
+    while IFS= read -r ARQ; do
+        SOMA=$(md5sum "$ISO_ARQUIVOS/$ARQ" | cut -d' ' -f1)
+        sed -i "s|^[0-9a-f]\{32\}  \./${ARQ//./\\.}\$|$SOMA  ./$ARQ|" "$BUILD/md5sum.txt"
+    done < <(lista_iso_arquivos)
 }
 
 gerar_iso() {
@@ -291,6 +303,9 @@ gerar_iso() {
     for ARQ in minimal.squashfs minimal.manifest minimal.manifest.full minimal.size install-sources.yaml; do
         MAPS+=(-map "$CASPER/$ARQ" "/casper/$ARQ")
     done
+    while IFS= read -r ARQ; do
+        MAPS+=(-map "$ISO_ARQUIVOS/$ARQ" "/$ARQ")
+    done < <(lista_iso_arquivos)
 
     xorriso -indev "$ISO_BASE" -outdev "$ISO_NOVA" \
         -volid "$VOLID" \
