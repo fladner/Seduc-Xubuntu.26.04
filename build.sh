@@ -266,7 +266,8 @@ gerar_casper() {
     echo "$TAMANHO" > "$CASPER/minimal.size"
     sed -i "s/^\([[:space:]]*size:\).*/\1 $TAMANHO/" "$CASPER/install-sources.yaml"
 
-    sed -i "s/ - Release / - SEDUC v${VERSAO} - Release /" "$BUILD/info"
+    # Idempotente: o RETOMAR=1 passa aqui de novo
+    sed -i -E "s/( - SEDUC v[^ ]+)* - Release / - SEDUC v${VERSAO} - Release /" "$BUILD/info"
 
     log "Compactando minimal.squashfs (xz, demora bastante)"
     mksquashfs "$ROOTFS" "$CASPER/minimal.squashfs" \
