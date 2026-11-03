@@ -255,7 +255,9 @@ instalar_pacotes() {
     rm -f "$ROOTFS"/etc/netmonitor-agent/{installation-id,token,config.json}
     rm -rf "$ROOTFS"/root/.config/rustdesk
 
-    rm -rf "$ROOTFS/tmp/seduc-debs"
+    # Temporários: os .deb extras e restos que já vinham na ISO base
+    # (lu*.tmp do LibreOffice, hsperfdata do Java: ~29 MB)
+    find "$ROOTFS/tmp" "$ROOTFS/var/tmp" -mindepth 1 -delete
     rm -rf "$ROOTFS"/var/lib/apt/lists/*
     limpar_chroot
 }
