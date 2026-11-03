@@ -10,7 +10,7 @@
 
 set -uo pipefail
 
-SCRIPT_VERSION="1.2-0"
+SCRIPT_VERSION="1.3-0"
 
 #####################
 ## VARIABLE GLOBAL ##
