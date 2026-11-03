@@ -70,7 +70,6 @@ start_spinner
     GREETER_BACKUP_CONF="${GREETER_DESKTOP_CONF}.bkp"
     XFCE_DESKTOP_CONF="/etc/xdg/xdg-xubuntu/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml"
     XFCE_BACKUP_CONF="${XFCE_DESKTOP_CONF}.bkp"
-    CHROME_LOCAL_CONF="/usr/local/share/applications/com.google.Chrome.desktop"
     PANEL_XML="/etc/xdg/xdg-xubuntu/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml"
     PANEL_XML_BACKUP="${PANEL_XML}.bkp"
     DEFAULT_XML="/etc/xdg/xdg-xubuntu/xfce4/panel/default.xml"
@@ -89,8 +88,8 @@ start_spinner
     # Restaura o lightdm-gtk-greeter
     [ -f "$GREETER_BACKUP_CONF" ] && cp "$GREETER_BACKUP_CONF" "$GREETER_DESKTOP_CONF"
     
-    # Restaura o google-chrome
-    [ -f "$CHROME_LOCAL_CONF" ] && rm "$CHROME_LOCAL_CONF"
+    # Atalhos do Chrome ficam (são da ISO, não só do laboratório)
+    /usr/local/seduc/scripts/atalho_chrome.sh >/dev/null
     
     # Restaura o xfce4-panel.xml
     # .ausente: o arquivo não existia antes do perfil laboratório

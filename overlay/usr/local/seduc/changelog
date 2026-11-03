@@ -13,8 +13,10 @@
     - Papel de parede e fundo da tela de login não mudam mais: o perfil
       laboratório mantém os da SEDUC e a trava de perfil não mexe na área
       de trabalho
+    - Google Chrome volta ao menu e ao painel: o atalho do pacote vem oculto
+      (NoDisplay) e o perfil laboratório o copiava; novo atalho_chrome.sh
+      gera os atalhos certos no build e no perfil laboratório
     - Menu Whisker: favorito do Google Chrome aponta para com.google.Chrome
-      (o atalho antigo some no perfil laboratório)
 
 ## 1.1-0 - 28/10/2026
     - Welcome reescrito: boas-vindas ao administrador e escolha dos usuários

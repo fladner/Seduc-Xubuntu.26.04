@@ -248,6 +248,9 @@ instalar_pacotes() {
     # Certificados de usr/local/share/ca-certificates (proxy SEDUC) no console
     chroot "$ROOTFS" update-ca-certificates
 
+    # O com.google.Chrome.desktop do pacote vem oculto (NoDisplay=true)
+    "$OVERLAY/usr/local/seduc/scripts/atalho_chrome.sh" "$ROOTFS"
+
     # A imagem é clonada em todas as máquinas: nenhuma identidade pode ir junto
     rm -f "$ROOTFS"/etc/netmonitor-agent/{installation-id,token,config.json}
     rm -rf "$ROOTFS"/root/.config/rustdesk

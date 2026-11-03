@@ -7,7 +7,6 @@ SCRIPT_VERSION="1.2-0"
 #####################
 ## VARIABLE GLOBAL ##
 #####################
-CHROME_OLD="/usr/share/applications/google-chrome.desktop"
 FLAG="/usr/local/seduc/flags/pos-install"
 
 ######################
@@ -164,24 +163,9 @@ conf_desktop() {
     pkill xfsettingsd 2>/dev/null || true
 }
 
-# Aplica as configurações do navegador chrome devido a problema no gnome-keyrings
+# Atalhos do Chrome visíveis e com --password-store=basic (problema do gnome-keyring)
 conf_chrome() {
-    local CHROME_NEW="/usr/share/applications/com.google.Chrome.desktop"    
-    local CHROME_OLD="/usr/share/applications/google-chrome.desktop"
-    local CHROME_LOCAL="/usr/local/share/applications/com.google.Chrome.desktop"
-    
-   
-    [ -f "$CHROME_OLD" ] && rm -rf $CHROME_OLD
-        SOURCE_DESKTOP="$CHROME_OLD"
-
-    # Atualiza padrão novo e o local se não existir
-    cp "$CHROME_NEW" "$CHROME_LOCAL"
-        
-    # Garante password-store=basic
-    if grep -q '^Exec=/usr/bin/google-chrome-stable' "$CHROME_LOCAL" && \
-        ! grep -q -- '--password-store=basic' "$CHROME_LOCAL"; then
-        sed -i '/^Exec=\/usr\/bin\/google-chrome-stable/ s|$| --password-store=basic|' "$CHROME_LOCAL"
-    fi
+    /usr/local/seduc/scripts/atalho_chrome.sh
 }
 
 # Limpa as configurações antigas do XFCE para iniciar a nova.
