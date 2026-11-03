@@ -257,6 +257,14 @@ instalar_pacotes() {
     # Certificados de usr/local/share/ca-certificates (proxy SEDUC) no console
     chroot "$ROOTFS" update-ca-certificates
 
+    # Active Directory: winbind, login do domínio e pam_mount só ligam no ingresso
+    # (painel_ad.sh); antes disso não podem atrasar o login dos usuários locais
+    chroot "$ROOTFS" systemctl disable winbind.service || true
+    chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive \
+        pam-auth-update --remove winbind libpam-mount \
+        || log "AVISO: pam-auth-update --remove winbind libpam-mount falhou"
+    sed -i -E '/^(passwd|group):/ s/[[:space:]]+winbind//g' "$ROOTFS/etc/nsswitch.conf"
+
     # O com.google.Chrome.desktop do pacote vem oculto (NoDisplay=true)
     "$OVERLAY/usr/local/seduc/scripts/atalho_chrome.sh" "$ROOTFS"
 

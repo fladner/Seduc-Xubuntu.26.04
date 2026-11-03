@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Active Directory SEDUC
+Comment=Ingressa o computador no domínio SEDUC (login, pastas do servidor e impressora)
+Exec=/usr/local/seduc/scripts/painel_ad.sh
+Icon=network-workgroup
+Terminal=false
+Type=Application
+Categories=SEDUC;GTK;
+StartupNotify=true

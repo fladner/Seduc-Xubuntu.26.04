@@ -7,3 +7,11 @@ apt-xapian-index
 anydesk
 firefox
 firefox-l10n-pt-br
+# Active Directory SEDUC (painel_ad.sh): ficam desligados até o ingresso
+winbind
+libpam-winbind
+libnss-winbind
+krb5-user
+libpam-mount
+cifs-utils
+smbclient
