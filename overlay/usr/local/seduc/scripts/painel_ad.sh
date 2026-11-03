@@ -2,7 +2,8 @@
 
 # Painel de ingresso no Active Directory SEDUC (menu SEDUC).
 # Pede as credenciais de um administrador do AD e chama via pkexec o
-# ingressar_ad.sh, que faz o ingresso, as pastas (pam_mount) e a impressora.
+# ingressar_ad.sh, que faz o ingresso e as pastas (pam_mount). As impressoras
+# o usuário do AD instala depois de entrar (painel_impressora_ad.sh).
 
 # Sem "set -e": em script de interface um erro não pode fechar a janela sem aviso.
 set -uo pipefail
@@ -20,9 +21,6 @@ TITULO="Active Directory SEDUC"
 ICONE="network-workgroup"
 
 DOMINIO="seduc.ce.gov.br"
-WORKGROUP="SEDUC"
-IMPRESSORA=""
-IMPRESSORA_SERVIDOR=""
 # shellcheck source=/dev/null
 [ -r "$AD_CONF" ] && . "$AD_CONF"
 
@@ -67,38 +65,6 @@ formulario() {
         "${BOTOES[@]}"
 }
 
-# Filas compartilhadas no servidor de impressão; imprime \\servidor\fila ou nada
-escolher_impressora() {
-    local USUARIO="$1" SENHA="$2" FILAS LINHAS=() TIPO NOME COMENT ESCOLHA
-    if [[ -n "$IMPRESSORA" ]]; then
-        echo "$IMPRESSORA"
-        return 0
-    fi
-    [[ -n "$IMPRESSORA_SERVIDOR" ]] || return 0
-
-    FILAS=$(PASSWD="$SENHA" smbclient -L "//$IMPRESSORA_SERVIDOR" -U "$USUARIO" \
-                -W "$WORKGROUP" -g 2>/dev/null | grep '^Printer|')
-    if [[ -z "$FILAS" ]]; then
-        "${YAD[@]}" --image=dialog-warning --width=460 \
-            --text="Não foi possível listar as impressoras de $IMPRESSORA_SERVIDOR.\nContinuar o ingresso sem impressora?" \
-            --button="Cancelar:1" --button="Continuar:0" || return 1
-        return 0
-    fi
-
-    LINHAS+=(TRUE "" "Nenhuma" "")
-    while IFS='|' read -r TIPO NOME COMENT; do
-        LINHAS+=(FALSE "$NOME" "$NOME" "$COMENT")
-    done <<< "$FILAS"
-
-    ESCOLHA=$("${YAD[@]}" --list --radiolist --width=560 --height=360 \
-        --text="<b>Impressora de $IMPRESSORA_SERVIDOR</b>\nEscolha a impressora deste computador:" \
-        --column="" --column="fila:HD" --column="Impressora" --column="Descrição" \
-        --print-column=2 --separator="" \
-        --button="Cancelar:1" --button="Continuar:0" "${LINHAS[@]}") || return 1
-    [[ -n "$ESCOLHA" ]] && printf '\\\\%s\\%s\n' "$IMPRESSORA_SERVIDOR" "$ESCOLHA"
-    return 0
-}
-
 executar() {
     local SENHA="$1"; shift
     local STATUS_ARQ STATUS
@@ -118,7 +84,7 @@ mostrar_relatorio() {
     case "$STATUS" in
         126|127) erro "A senha do administrador local não foi confirmada.\nNada foi alterado."; return 1 ;;
         0) IMAGEM=dialog-information
-           TEXTO="<b>Pronto.</b>\nReinicie o computador para usar o login do domínio." ;;
+           TEXTO="<b>Pronto.</b>\nReinicie o computador para usar o login do domínio.\nDepois de entrar, o usuário instala as impressoras em SEDUC > Impressoras SEDUC." ;;
         *) IMAGEM=dialog-warning
            TEXTO="<b>Algo deu errado.</b>\nDetalhes em $LOG_ROOT" ;;
     esac
@@ -175,11 +141,10 @@ while :; do
         erro "Nome do computador inválido.\nUse até 15 letras, números ou hífen."
         continue
     fi
-    IMPRESSORA_SEL=$(escolher_impressora "$USUARIO" "$SENHA") || continue
     break
 done
 
-executar "$SENHA" entrar "$USUARIO" "$COMPUTADOR" "$OU" "$IMPRESSORA_SEL"
+executar "$SENHA" entrar "$USUARIO" "$COMPUTADOR" "$OU"
 STATUS=$?
 unset SENHA
 mostrar_relatorio "$STATUS" entrar

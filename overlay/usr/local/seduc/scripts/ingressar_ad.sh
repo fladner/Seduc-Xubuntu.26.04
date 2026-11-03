@@ -2,10 +2,11 @@
 
 # Parte root do painel de Active Directory (painel_ad.sh), chamada via pkexec.
 # Ingressa a máquina no AD SEDUC com Samba/winbind, monta as pastas do
-# servidor pelo pam_mount e instala a impressora compartilhada.
+# servidor pelo pam_mount. As impressoras o próprio usuário do AD instala
+# depois de entrar (painel_impressora_ad.sh).
 # A senha do administrador do AD chega pela entrada padrão (1ª linha), nunca
 # na linha de comando. Saída no formato do yad --progress.
-# Uso: ingressar_ad.sh entrar <usuario> <computador> [ou] [\\servidor\fila]
+# Uso: ingressar_ad.sh entrar <usuario> <computador> [ou]
 #      ingressar_ad.sh sair   <usuario>
 
 set -uo pipefail
@@ -97,7 +98,7 @@ acertar_hora() {
 }
 
 entrar() {
-    local USUARIO="$1" OU="${2:-}" IMPRESSORA_ARG="${3:-}" SENHA OPCOES=()
+    local USUARIO="$1" OU="${2:-}" SENHA OPCOES=()
     IFS= read -r SENHA || true
     [ -n "$SENHA" ] || falhar "Credenciais" "senha vazia"
 
@@ -170,26 +171,9 @@ entrar() {
         printf '[Seat:*]\ngreeter-show-manual-login=true\n' >> "$LIGHTDM"
     fi
 
-    IMPRESSORA="${IMPRESSORA_ARG:-$IMPRESSORA}"
-    if [ -n "$IMPRESSORA" ]; then
-        progresso 90 "Instalando a impressora $IMPRESSORA..."
-        instalar_impressora "$IMPRESSORA"
-    fi
+    relatorio "Impressoras" "cada usuário do AD instala pelo menu SEDUC > Impressoras SEDUC"
 
     progresso 100 "Concluído"
-}
-
-# \\servidor\fila -> smb://servidor/fila, autenticando com o ticket do usuário
-instalar_impressora() {
-    local URI
-    URI="smb://$(echo "$1" | sed -e 's|^\\\\||' -e 's|\\|/|g')"
-    if lpadmin -p "$IMPRESSORA_NOME" -E -v "$URI" -m "$IMPRESSORA_DRIVER" \
-            -o auth-info-required=negotiate -o printer-is-shared=false \
-       && lpoptions -d "$IMPRESSORA_NOME"; then
-        relatorio "Impressora" "$IMPRESSORA_NOME ($URI)"
-    else
-        relatorio "Impressora" "FALHA ao criar $URI (veja o log)"
-    fi
 }
 
 sair() {
@@ -212,7 +196,10 @@ sair() {
     [ -f /etc/security/pam_mount.conf.xml.seduc-bkp ] \
         && mv -f /etc/security/pam_mount.conf.xml.seduc-bkp /etc/security/pam_mount.conf.xml
     [ -f "$LIGHTDM" ] && sed -i 's/^greeter-show-manual-login=.*/greeter-show-manual-login=false/' "$LIGHTDM"
-    lpadmin -x "$IMPRESSORA_NOME" 2>/dev/null || true
+    # Impressoras instaladas pelo painel_impressora_ad.sh
+    lpstat -p 2>/dev/null | awk '$2 ~ /^SEDUC-/ {print $2}' | while read -r FILA; do
+        lpadmin -x "$FILA" || true
+    done
     relatorio "Configuração local" "desfeita (usuários locais continuam)"
     progresso 100 "Concluído"
 }
@@ -228,10 +215,10 @@ fi
 ACAO="${1:-}"
 case "$ACAO" in
     entrar)
-        [[ $# -ge 3 ]] || falhar "Uso" "entrar <usuario> <computador> [ou] [impressora]"
+        [[ $# -ge 3 ]] || falhar "Uso" "entrar <usuario> <computador> [ou]"
         COMPUTADOR="${3^^}"
         [[ "$COMPUTADOR" =~ ^[A-Z0-9-]{1,15}$ ]] || falhar "Computador" "nome inválido: use até 15 letras, números ou hífen"
-        entrar "$2" "${4:-}" "${5:-}"
+        entrar "$2" "${4:-}"
         ;;
     sair)
         [[ $# -ge 2 ]] || falhar "Uso" "sair <usuario>"

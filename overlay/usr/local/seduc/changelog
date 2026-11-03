@@ -6,9 +6,11 @@
     - Novo painel "Active Directory SEDUC" (painel_ad.sh): ingresso no domínio
       com winbind (smb.conf da 20.04 revisado), login de todos os usuários do
       AD com senha em cache, pastas do servidor pelo pam_mount conforme os
-      grupos, sudo para domain admins e astin_suporte, impressora do servidor
-      Windows (lista as filas de sedsrv2089) e opção de sair do domínio;
-      winbind fica desligado até o ingresso
+      grupos, sudo para domain admins e astin_suporte e opção de sair do
+      domínio; winbind fica desligado até o ingresso
+    - Novo painel "Impressoras SEDUC": depois de entrar, o usuário do AD lista
+      as impressoras do sedsrv2089 com o próprio login e instala sem a senha
+      do administrador (regra do polkit só para essas filas)
 
 ## 1.2-0 - 29/10/2026
     - Todos os pacotes atualizados para a versão mais nova dos repositórios
