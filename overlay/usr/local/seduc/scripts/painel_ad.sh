@@ -20,7 +20,9 @@ TITULO="Active Directory SEDUC"
 ICONE="network-workgroup"
 
 DOMINIO="seduc.ce.gov.br"
+WORKGROUP="SEDUC"
 IMPRESSORA=""
+IMPRESSORA_SERVIDOR=""
 # shellcheck source=/dev/null
 [ -r "$AD_CONF" ] && . "$AD_CONF"
 
@@ -51,7 +53,7 @@ nome_padrao() {
 
 formulario() {
     local BOTOES=(--button="Cancelar:1" --button="Ingressar:0")
-    local TEXTO="<b>Ingressar este computador no domínio $DOMINIO</b>\nUse um usuário do AD com permissão para ingressar máquinas.\nImpressora no formato \\\\\\\\servidor\\\\fila."
+    local TEXTO="<b>Ingressar este computador no domínio $DOMINIO</b>\nUse um usuário do AD com permissão para ingressar máquinas."
     if no_dominio; then
         TEXTO="<b>Este computador já está no domínio $(wbinfo --own-domain 2>/dev/null).</b>\nPara refazer, ingresse de novo; para remover, use Sair do domínio."
         BOTOES=(--button="Cancelar:1" --button="Sair do domínio:3" --button="Ingressar de novo:0")
@@ -62,8 +64,39 @@ formulario() {
         --field="Senha:H" "" \
         --field="Nome do computador (até 15)" "$(nome_padrao)" \
         --field="OU do computador (opcional, ex.: Escolas/Computadores)" "" \
-        --field="Impressora compartilhada (opcional)" "$IMPRESSORA" \
         "${BOTOES[@]}"
+}
+
+# Filas compartilhadas no servidor de impressão; imprime \\servidor\fila ou nada
+escolher_impressora() {
+    local USUARIO="$1" SENHA="$2" FILAS LINHAS=() TIPO NOME COMENT ESCOLHA
+    if [[ -n "$IMPRESSORA" ]]; then
+        echo "$IMPRESSORA"
+        return 0
+    fi
+    [[ -n "$IMPRESSORA_SERVIDOR" ]] || return 0
+
+    FILAS=$(PASSWD="$SENHA" smbclient -L "//$IMPRESSORA_SERVIDOR" -U "$USUARIO" \
+                -W "$WORKGROUP" -g 2>/dev/null | grep '^Printer|')
+    if [[ -z "$FILAS" ]]; then
+        "${YAD[@]}" --image=dialog-warning --width=460 \
+            --text="Não foi possível listar as impressoras de $IMPRESSORA_SERVIDOR.\nContinuar o ingresso sem impressora?" \
+            --button="Cancelar:1" --button="Continuar:0" || return 1
+        return 0
+    fi
+
+    LINHAS+=(TRUE "" "Nenhuma" "")
+    while IFS='|' read -r TIPO NOME COMENT; do
+        LINHAS+=(FALSE "$NOME" "$NOME" "$COMENT")
+    done <<< "$FILAS"
+
+    ESCOLHA=$("${YAD[@]}" --list --radiolist --width=560 --height=360 \
+        --text="<b>Impressora de $IMPRESSORA_SERVIDOR</b>\nEscolha a impressora deste computador:" \
+        --column="" --column="fila:HD" --column="Impressora" --column="Descrição" \
+        --print-column=2 --separator="" \
+        --button="Cancelar:1" --button="Continuar:0" "${LINHAS[@]}") || return 1
+    [[ -n "$ESCOLHA" ]] && printf '\\\\%s\\%s\n' "$IMPRESSORA_SERVIDOR" "$ESCOLHA"
+    return 0
 }
 
 executar() {
@@ -122,7 +155,6 @@ while :; do
     SENHA="${CAMPOS[1]:-}"
     COMPUTADOR="${CAMPOS[2]:-}"
     OU="${CAMPOS[3]:-}"
-    IMPRESSORA_SEL="${CAMPOS[4]:-}"
 
     if [[ -z "$USUARIO" || -z "$SENHA" ]]; then
         erro "Informe o usuário e a senha do administrador do AD."
@@ -143,6 +175,7 @@ while :; do
         erro "Nome do computador inválido.\nUse até 15 letras, números ou hífen."
         continue
     fi
+    IMPRESSORA_SEL=$(escolher_impressora "$USUARIO" "$SENHA") || continue
     break
 done
 

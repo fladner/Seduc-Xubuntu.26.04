@@ -7,7 +7,8 @@
       com winbind (smb.conf da 20.04 revisado), login de todos os usuários do
       AD com senha em cache, pastas do servidor pelo pam_mount conforme os
       grupos, sudo para domain admins e astin_suporte, impressora do servidor
-      Windows e opção de sair do domínio; winbind fica desligado até o ingresso
+      Windows (lista as filas de sedsrv2089) e opção de sair do domínio;
+      winbind fica desligado até o ingresso
 
 ## 1.2-0 - 29/10/2026
     - Todos os pacotes atualizados para a versão mais nova dos repositórios
