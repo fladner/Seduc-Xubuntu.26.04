@@ -14,3 +14,29 @@ RustDesk (https://github.com/rustdesk/rustdesk/releases):
              4e2b9701d25a7ef373f3d09bda584a37d6902f97a6ab15f2e86d4a5783e2a0ec
 
 Conferir:  sha256sum *.deb
+
+Web PKI (Lacuna) - componente nativo, instalado no build:
+  https://get.webpkiplugin.com/Downloads/2.16.1/setup-deb-64
+  webpki-plugin-2.16.1-amd64.deb (pacote lacuna-webpki)
+
+
+instaladores/ - copiados para /usr/local/seduc/instaladores e usados pelo
+painel_tokens.sh (Instalador de Tokens, menu SEDUC). Mesmas fontes do
+instalador_drivers_token.sh; os .deb saem de dentro dos .zip:
+  Linux_SAC_10.9_GA.zip (Ubuntu-2204)  -> safenetauthenticationclient_10.9.4723_amd64.deb
+  CryptoID_Drivers_Linux.zip           -> CryptoIDEUserTools-1.0.1.amd64.deb
+                                          CryptoIDEAdminTools-1.0.1.amd64.deb
+  safesign-ic-standard-linux-ub2404-4-4-0-0-aet-000.zip
+                                       -> safesign-ic-standard-4.4.0.0-ub2404-amd64.deb
+  Logus: assinador_digital_linux_com_jre.tar.gz e Logus.png
+  BRy:   bry-ExtensionModule.deb e bry-assinatura-digital.xpi
+  Oracle Java 8 e Assinador SERPRO não vão na ISO: o painel baixa na hora.
+SHA-256 (cd instaladores && sha256sum -c):
+  5a1af479d1c517698e6d867c73b93795fbcf36c60b8caecd7d846383cb9e84c2  assinador_digital_linux_com_jre.tar.gz
+  67133e0edfb87a30b6cdee1e1772d86e2609b95b70f463764dccc5231f808b13  bry-assinatura-digital.xpi
+  99e7d51061bbc754e5a21978c989cd9e23db2c84bb0526a8d6917f419f12b46c  bry-ExtensionModule.deb
+  32337a086c274f39463300a14abca2892ee31ed118fe2ab21846f72d4c30a551  CryptoIDEAdminTools-1.0.1.amd64.deb
+  0ebc997b7d46f605e236b5fa264fbecdcb311e0b7b3f6457fc2d61accbd71ae3  CryptoIDEUserTools-1.0.1.amd64.deb
+  6699b0aa1f1b846cc2937f99356a360fd58f5e1c1a123e4030c3bfcaff3a16be  Logus.png
+  85e93a543e3dda2123aa56c60fe94767e4e0a43aa255160355613efc5de3c043  safenetauthenticationclient_10.9.4723_amd64.deb
+  d9dacc3c3abc83bfabc7f083a6dd84b62b203127ad6a3c159271ab969f10b3ac  safesign-ic-standard-4.4.0.0-ub2404-amd64.deb

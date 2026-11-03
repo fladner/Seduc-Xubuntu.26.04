@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Instalador de Tokens
+Comment=Instala o driver do token (Safenet, CryptoID, StarSign) e os assinadores digitais
+Exec=/usr/local/seduc/scripts/painel_tokens.sh
+Icon=dialog-password
+Terminal=false
+Type=Application
+Categories=SEDUC;GTK;
+StartupNotify=true

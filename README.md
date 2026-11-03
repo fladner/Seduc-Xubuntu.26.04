@@ -14,7 +14,7 @@ O `build.sh` parte da ISO anterior, aplica as mudanças deste repositório e ger
 | `config/pacotes-remover.txt` | Pacotes removidos no build |
 | `config/arquivos-remover.txt` | Arquivos apagados da imagem |
 | `config/*.gpg` | Chaves públicas: repositório NetMonitor e atualizador do `seduc_setup.sh` |
-| `debs/` | `.deb` extras (Epson, RustDesk); não versionados, veja `debs/LEIAME.txt` |
+| `debs/` | `.deb` extras (Epson, RustDesk, Web PKI) e `debs/instaladores/` (tokens e assinadores do painel); não versionados, veja `debs/LEIAME.txt` |
 | `scripts/` | `seduc_setup.sh` publicado e assinado, baixado pelas máquinas instaladas |
 | `tools/` | Ferramentas de manutenção |
 | `overlay/usr/local/seduc/changelog` | O que mudou em cada versão |

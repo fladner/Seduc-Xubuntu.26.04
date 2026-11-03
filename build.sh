@@ -30,6 +30,7 @@ CHAVE_ATUALIZADOR="$PROJETO/config/seduc-updates.gpg"
 # Chave do repositório do NetMonitor; o pacote instala a própria cópia e o .sources
 CHAVE_NETMONITOR="$PROJETO/config/fladnernetworks-archive-keyring.gpg"
 DEBS="$PROJETO/debs"
+INSTALADORES="$DEBS/instaladores"
 # Arquivos que substituem os da ISO no mesmo caminho (ex.: iso/boot/grub/grub.cfg)
 ISO_ARQUIVOS="$PROJETO/iso"
 BUILD="$PROJETO/work/build"
@@ -123,6 +124,14 @@ aplicar_overlay() {
     find "$SEDUC" -type d -exec chmod 755 {} +
     find "$SEDUC" -type f -exec chmod 644 {} +
     chmod 755 "$SEDUC"/scripts/*.sh
+
+    # Instaladores dos tokens e assinadores usados pelo painel_tokens.sh (debs/instaladores)
+    if compgen -G "$INSTALADORES/*" >/dev/null; then
+        install -d -m 755 "$SEDUC/instaladores"
+        install -m 644 "$INSTALADORES"/* "$SEDUC/instaladores/"
+    else
+        log "AVISO: $INSTALADORES vazio; o painel de tokens vai baixar tudo da internet"
+    fi
 
     # Logs e flags continuam graváveis pelo administrador (grupo adm), que roda o welcome
     chown root:adm "$SEDUC/logs" "$SEDUC/flags"

@@ -12,6 +12,12 @@
       "Install": [
         "/usr/local/share/ca-certificates/ProxyCert.crt"
       ]
+    },
+    "ExtensionSettings": {
+      "webpki-beta@lacunasoftware.com": {
+        "installation_mode": "force_installed",
+        "install_url": "https://get.webpkiplugin.com/firefox-extensions/2_18_2"
+      }
     }
   }
 }

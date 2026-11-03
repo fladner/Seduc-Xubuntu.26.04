@@ -17,6 +17,10 @@
       (NoDisplay) e o perfil laboratório o copiava; novo atalho_chrome.sh
       gera os atalhos certos no build e no perfil laboratório
     - Menu Whisker: favorito do Google Chrome aponta para com.google.Chrome
+    - Web PKI (Lacuna) no Chrome e no Firefox, com o componente nativo 2.16.1
+    - Novo "Instalador de Tokens" no menu SEDUC (painel_tokens.sh): detecta o
+      token (Safenet, CryptoID, StarSign) e instala driver, Assinador Logus,
+      Assinador SERPRO, extensão BRy e Java 8; drivers, Logus e BRy vêm na ISO
 
 ## 1.1-0 - 28/10/2026
     - Welcome reescrito: boas-vindas ao administrador e escolha dos usuários
