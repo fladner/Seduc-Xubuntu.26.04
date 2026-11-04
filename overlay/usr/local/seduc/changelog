@@ -11,6 +11,9 @@
     - Novo painel "Impressoras SEDUC": depois de entrar, o usuário do AD lista
       as impressoras do sedsrv2089 com o próprio login e instala sem a senha
       do administrador (regra do polkit só para essas filas)
+    - SIGE SEDUC no menu: Oracle Forms no Wine 10 (32 bits), preparado no
+      primeiro uso de cada usuário; precisa do login do domínio
+    - SIGE Remoto no menu, por área de trabalho remota (rdesktop)
 
 ## 1.2-0 - 29/10/2026
     - Todos os pacotes atualizados para a versão mais nova dos repositórios

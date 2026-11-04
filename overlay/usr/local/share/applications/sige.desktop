@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=SIGE SEDUC
+Comment=Sistema Integrado de Gestão Escolar (precisa do login do domínio)
+Exec=/usr/local/seduc/scripts/sige.sh
+Icon=/usr/local/seduc/icones/sige.png
+Terminal=false
+Categories=SEDUC;

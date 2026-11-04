@@ -183,6 +183,11 @@ alterar_pacotes() {
             > "$ROOTFS/etc/apt/sources.list.d/seduc-build-netmonitor.sources"
     fi
 
+    # Pacotes :i386 (wine32 do SIGE) precisam da arquitetura antes do update
+    if printf '%s\n' "${INSTALAR[@]}" | grep -q ':i386$'; then
+        chroot "$ROOTFS" dpkg --add-architecture i386
+    fi
+
     chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
         apt-get update
 

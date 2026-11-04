@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=SIGE Remoto
+Comment=SIGE por área de trabalho remota, para computadores fora do domínio
+Exec=/usr/local/seduc/scripts/sige_remoto.sh
+Icon=/usr/local/seduc/icones/sige-remoto.png
+Terminal=false
+Categories=SEDUC;

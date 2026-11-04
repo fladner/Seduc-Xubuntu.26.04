@@ -15,3 +15,6 @@ krb5-user
 libpam-mount
 cifs-utils
 smbclient
+# SIGE (Oracle Forms 32 bits): Wine só de 32 bits; rdesktop do SIGE Remoto já vem na base
+wine
+wine32:i386
