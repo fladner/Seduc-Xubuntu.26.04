@@ -30,7 +30,9 @@ sudo ./build.sh [ISO_BASE] [VERSAO]
 ```
 
 A ISO sai em `out/`, com o `.sha256` ao lado. Por padrão a base é
-`~/Downloads/xubuntu-seduc-26.04-v1.0-0-amd64.iso`.
+`base/xubuntu-seduc-26.04-v1.3-0-amd64.iso` (fora do Git). O build só baixa
+da internet o que faltar nessa base; para atualizar também todos os pacotes,
+use `sudo ATUALIZAR=1 ./build.sh`.
 
 ## Publicar uma versão nova do seduc_setup.sh
 

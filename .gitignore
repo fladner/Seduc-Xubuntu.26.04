@@ -5,3 +5,4 @@ out/
 debs/*.deb
 debs/instaladores/
 debs/tokens/
+base/

@@ -7,4 +7,3 @@ thunderbird-locale-pt-pt
 # Firefox do PPA mozillateam: reinstalado do repositório oficial da Mozilla
 xul-ext-ubufox
 firefox-locale-pt
-firefox
