@@ -5,4 +5,5 @@ out/
 debs/*.deb
 debs/instaladores/
 debs/tokens/
+# ISOs guardadas para testes, fora do build
 base/

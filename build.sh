@@ -11,8 +11,6 @@
 # Uso: sudo ./build.sh [ISO_BASE] [VERSAO]
 #      sudo RETOMAR=1 ./build.sh   refaz só do passo 4 em diante, usando o
 #                                  work/build/rootfs da última compilação
-#      sudo ATUALIZAR=1 ./build.sh atualiza também todos os pacotes pela internet;
-#                                  sem isso só baixa o que faltar na ISO base
 
 set -euo pipefail
 
@@ -20,7 +18,7 @@ set -euo pipefail
 ## VARIABLE GLOBAL ##
 #####################
 PROJETO="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
-ISO_BASE="${1:-$PROJETO/base/xubuntu-seduc-26.04-v1.3-0-amd64.iso}"
+ISO_BASE="${1:-/home/fladner/Downloads/xubuntu-seduc-26.04-v1.0-0-amd64.iso}"
 VERSAO="${2:-$(cat "$PROJETO/overlay/usr/local/seduc/version")}"
 
 OVERLAY="$PROJETO/overlay"
@@ -156,78 +154,6 @@ aplicar_overlay() {
     done < <(sed 's/#.*//; s/[[:space:]]//g; /^$/d' "$ARQUIVOS_REMOVER")
 }
 
-pacote_instalado() {
-    chroot "$ROOTFS" dpkg-query -W -f='${db:Status-Abbrev}' "$1" 2>/dev/null | grep -q '^ii'
-}
-
-# Usa INSTALAR, CHROOT_DEBS e REMOVER de instalar_pacotes
-alterar_pacotes() {
-    # O repositório file:///cdrom só existe com a ISO montada (modo live)
-    if [[ -e "$ROOTFS/etc/apt/sources.list.d/cdrom.sources" ]]; then
-        mv -f "$ROOTFS/etc/apt/sources.list.d/cdrom.sources" "$ROOTFS/etc/apt/cdrom.sources.seduc-build"
-    fi
-
-    # Repositório do NetMonitor só para o build. Nome diferente do arquivo do
-    # pacote, que instala o próprio .sources e a chave como conffiles: com os
-    # dois juntos o apt recusa (Signed-By conflitante).
-    local NETMONITOR="$ROOTFS/etc/apt/sources.list.d/fladnernetworks-netmonitor.sources"
-    if [[ ! -f "$NETMONITOR" ]]; then
-        install -m 644 "$CHAVE_NETMONITOR" "$ROOTFS/etc/apt/seduc-build-netmonitor.gpg"
-        printf '%s\n' \
-            'Types: deb' \
-            'URIs: https://apt.fladnernetworks.com.br' \
-            'Suites: stable' \
-            'Components: main' \
-            'Architectures: amd64' \
-            'Signed-By: /etc/apt/seduc-build-netmonitor.gpg' \
-            > "$ROOTFS/etc/apt/sources.list.d/seduc-build-netmonitor.sources"
-    fi
-
-    # Pacotes :i386 (wine32 do SIGE) precisam da arquitetura antes do update
-    if printf '%s\n' "${INSTALAR[@]}" | grep -q ':i386$'; then
-        chroot "$ROOTFS" dpkg --add-architecture i386
-    fi
-
-    chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
-        apt-get update
-
-    if [[ ${#REMOVER[@]} -gt 0 ]]; then
-        log "Removendo: ${REMOVER[*]}"
-        chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
-            apt-get purge -y "${REMOVER[@]}"
-    fi
-
-    if [[ ${#INSTALAR[@]} -gt 0 || ${#CHROOT_DEBS[@]} -gt 0 ]]; then
-        log "Instalando: ${INSTALAR[*]} ${CHROOT_DEBS[*]}"
-        chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
-            apt-get install -y --no-install-recommends "${INSTALAR[@]}" "${CHROOT_DEBS[@]}"
-    fi
-
-    if [[ -f "$NETMONITOR" ]]; then
-        rm -f "$ROOTFS/etc/apt/sources.list.d/seduc-build-netmonitor.sources" \
-              "$ROOTFS/etc/apt/seduc-build-netmonitor.gpg"
-    fi
-
-    if [[ "${ATUALIZAR:-0}" == "1" ]]; then
-        # Atualiza tudo para a versão mais nova dos repositórios. O kernel fica:
-        # o vmlinuz/initrd da ISO precisam bater com os módulos do squashfs.
-        # Arquivos de configuração alterados pelo overlay são mantidos (confold).
-        local KERNEL=() K
-        for K in linux-generic linux-image-generic linux-headers-generic; do
-            if pacote_instalado "$K"; then
-                KERNEL+=("$K")
-            fi
-        done
-        [[ ${#KERNEL[@]} -gt 0 ]] && chroot "$ROOTFS" apt-mark hold "${KERNEL[@]}"
-        log "Atualizando todos os pacotes (kernel mantido: ${KERNEL[*]})"
-        chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
-            apt-get full-upgrade -y \
-            -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold
-        [[ ${#KERNEL[@]} -gt 0 ]] && chroot "$ROOTFS" apt-mark unhold "${KERNEL[@]}"
-    fi
-    chroot "$ROOTFS" apt-get clean
-}
-
 instalar_pacotes() {
     local LISTA=() DEBS_LISTA=()
 
@@ -256,35 +182,82 @@ instalar_pacotes() {
     printf '#!/bin/sh\nexit 101\n' > "$ROOTFS/usr/sbin/policy-rc.d"
     chmod 755 "$ROOTFS/usr/sbin/policy-rc.d"
 
-    # Só vai à internet se faltar algo em relação à ISO base, ou com ATUALIZAR=1
-    local INSTALAR=() CHROOT_DEBS=() REMOVER=() P D VER_DEB VER_BASE
-    for P in "${LISTA[@]}"; do
-        pacote_instalado "$P" || INSTALAR+=("$P")
-    done
-    mkdir -p "$ROOTFS/tmp/seduc-debs"
-    for D in "${DEBS_LISTA[@]}"; do
-        P=$(dpkg-deb -f "$D" Package)
-        VER_DEB=$(dpkg-deb -f "$D" Version)
-        VER_BASE=""
-        if pacote_instalado "$P"; then
-            VER_BASE=$(chroot "$ROOTFS" dpkg-query -W -f='${Version}' "$P")
-        fi
-        if [[ -z "$VER_BASE" ]] || dpkg --compare-versions "$VER_BASE" lt "$VER_DEB"; then
-            cp "$D" "$ROOTFS/tmp/seduc-debs/"
+    # O repositório file:///cdrom só existe com a ISO montada (modo live)
+    if [[ -e "$ROOTFS/etc/apt/sources.list.d/cdrom.sources" ]]; then
+        mv -f "$ROOTFS/etc/apt/sources.list.d/cdrom.sources" "$ROOTFS/etc/apt/cdrom.sources.seduc-build"
+    fi
+
+    # Repositório do NetMonitor só para o build. Nome diferente do arquivo do
+    # pacote, que instala o próprio .sources e a chave como conffiles.
+    install -m 644 "$CHAVE_NETMONITOR" "$ROOTFS/etc/apt/seduc-build-netmonitor.gpg"
+    printf '%s\n' \
+        'Types: deb' \
+        'URIs: https://apt.fladnernetworks.com.br' \
+        'Suites: stable' \
+        'Components: main' \
+        'Architectures: amd64' \
+        'Signed-By: /etc/apt/seduc-build-netmonitor.gpg' \
+        > "$ROOTFS/etc/apt/sources.list.d/seduc-build-netmonitor.sources"
+
+    local CHROOT_DEBS=()
+    if [[ ${#DEBS_LISTA[@]} -gt 0 ]]; then
+        mkdir -p "$ROOTFS/tmp/seduc-debs"
+        cp "${DEBS_LISTA[@]}" "$ROOTFS/tmp/seduc-debs/"
+        local D
+        for D in "${DEBS_LISTA[@]}"; do
             CHROOT_DEBS+=("/tmp/seduc-debs/$(basename "$D")")
-        fi
-    done
+        done
+    fi
+
+    # Pacotes :i386 (wine32 do SIGE) precisam da arquitetura antes do update
+    if printf '%s\n' "${LISTA[@]}" | grep -q ':i386$'; then
+        chroot "$ROOTFS" dpkg --add-architecture i386
+    fi
+
+    chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
+        apt-get update
+
+    # Remove só os pacotes da lista que estão instalados
+    local REMOVER=() P
     while read -r P; do
-        if pacote_instalado "$P"; then
+        if chroot "$ROOTFS" dpkg-query -W -f='${db:Status-Abbrev}' "$P" 2>/dev/null | grep -q '^ii'; then
             REMOVER+=("$P")
         fi
     done < <(sed 's/#.*//; s/[[:space:]]//g; /^$/d' "$PACOTES_REMOVER")
 
-    if [[ ${#INSTALAR[@]} -eq 0 && ${#CHROOT_DEBS[@]} -eq 0 && ${#REMOVER[@]} -eq 0 && "${ATUALIZAR:-0}" != "1" ]]; then
-        log "A ISO base já tem todos os pacotes: nada para baixar (ATUALIZAR=1 força)"
-    else
-        alterar_pacotes
+    if [[ ${#REMOVER[@]} -gt 0 ]]; then
+        log "Removendo: ${REMOVER[*]}"
+        chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
+            apt-get purge -y "${REMOVER[@]}"
     fi
+
+    log "Instalando: ${LISTA[*]} ${CHROOT_DEBS[*]}"
+    chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
+        apt-get install -y --no-install-recommends "${LISTA[@]}" "${CHROOT_DEBS[@]}"
+
+    # O pacote do NetMonitor traz o próprio .sources para o mesmo repositório:
+    # com o temporário junto o apt recusa (Signed-By conflitante)
+    if [[ -f "$ROOTFS/etc/apt/sources.list.d/fladnernetworks-netmonitor.sources" ]]; then
+        rm -f "$ROOTFS/etc/apt/sources.list.d/seduc-build-netmonitor.sources" \
+              "$ROOTFS/etc/apt/seduc-build-netmonitor.gpg"
+    fi
+
+    # Atualiza tudo para a versão mais nova dos repositórios. O kernel fica:
+    # o vmlinuz/initrd da ISO precisam bater com os módulos do squashfs.
+    # Arquivos de configuração alterados pelo overlay são mantidos (confold).
+    local KERNEL=() K
+    for K in linux-generic linux-image-generic linux-headers-generic; do
+        if chroot "$ROOTFS" dpkg-query -W -f='${db:Status-Abbrev}' "$K" 2>/dev/null | grep -q '^ii'; then
+            KERNEL+=("$K")
+        fi
+    done
+    [[ ${#KERNEL[@]} -gt 0 ]] && chroot "$ROOTFS" apt-mark hold "${KERNEL[@]}"
+    log "Atualizando todos os pacotes (kernel mantido: ${KERNEL[*]})"
+    chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
+        apt-get full-upgrade -y \
+        -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold
+    [[ ${#KERNEL[@]} -gt 0 ]] && chroot "$ROOTFS" apt-mark unhold "${KERNEL[@]}"
+    chroot "$ROOTFS" apt-get clean
 
     # Certificados de usr/local/share/ca-certificates (proxy SEDUC) no console
     chroot "$ROOTFS" update-ca-certificates
