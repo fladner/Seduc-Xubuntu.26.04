@@ -10,7 +10,8 @@
       domínio; winbind fica desligado até o ingresso
     - Novo painel "Impressoras SEDUC": depois de entrar, o usuário do AD lista
       as impressoras do sedsrv2089 com o próprio login e instala sem a senha
-      do administrador (regra do polkit só para essas filas)
+      do administrador (regra do polkit só para essas filas); a impressão usa
+      o ticket Kerberos de quem imprime, sem pedir senha
     - SIGE SEDUC no menu: Oracle Forms no Wine 10 (32 bits), preparado no
       primeiro uso de cada usuário; precisa do login do domínio
     - SIGE Remoto no menu, por área de trabalho remota (rdesktop)

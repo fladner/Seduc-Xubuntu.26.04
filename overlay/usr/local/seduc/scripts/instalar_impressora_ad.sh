@@ -15,6 +15,10 @@ SCRIPT_VERSION="1.3-0"
 #####################
 AD_CONF="/usr/local/seduc/ad/ad.conf"
 LOG="/usr/local/seduc/logs/instalar_impressora_ad.log"
+WRAPPER_KRB5="/usr/libexec/samba/smbspool_krb5_wrapper"
+BACKEND_SMB="/usr/lib/cups/backend/smb"
+BACKEND_SMB_ORIGINAL="/usr/lib/cups/smb.seduc-original"
+APPARMOR_LOCAL="/etc/apparmor.d/local/usr.sbin.cupsd"
 
 IMPRESSORA_SERVIDOR=""
 IMPRESSORA_DRIVER="drv:///sample.drv/generpcl.ppd"
@@ -49,6 +53,29 @@ uri_fila() {
     echo "smb://$IMPRESSORA_SERVIDOR/$SAIDA"
 }
 
+# Faz o CUPS imprimir com o ticket Kerberos de quem mandou o trabalho: o backend
+# smb do pacote é o smbspool, que roda como lp e não enxerga o ticket; sem ele o
+# trabalho fica retido pedindo "negotiate". O wrapper do Samba troca para o
+# usuário antes do smbspool. Desvio com dpkg-divert para sobreviver às
+# atualizações do smbclient; o caminho real do wrapper precisa de regra no
+# AppArmor do cupsd.
+preparar_backend_kerberos() {
+    [[ -x "$WRAPPER_KRB5" ]] || { echo "Não encontrado: $WRAPPER_KRB5"; return 1; }
+
+    if [[ "$(readlink -f "$BACKEND_SMB")" != "$WRAPPER_KRB5" ]]; then
+        dpkg-divert --local --rename --divert "$BACKEND_SMB_ORIGINAL" --add "$BACKEND_SMB" || return 1
+        ln -sf "$WRAPPER_KRB5" "$BACKEND_SMB" || return 1
+        echo "Backend smb: $WRAPPER_KRB5"
+    fi
+
+    if ! grep -qsF "$WRAPPER_KRB5" "$APPARMOR_LOCAL"; then
+        echo "$WRAPPER_KRB5 Cx -> third_party," >> "$APPARMOR_LOCAL"
+    fi
+    if [[ -d /sys/kernel/security/apparmor ]]; then
+        apparmor_parser -r /etc/apparmor.d/usr.sbin.cupsd || return 1
+    fi
+}
+
 ##########
 ## MAIN ##
 ##########
@@ -62,6 +89,10 @@ fi
 ACAO="${1:-}"
 shift || true
 [[ $# -gt 0 ]] || { echo "Nenhuma fila informada"; exit 1; }
+
+if [[ "$ACAO" == adicionar ]]; then
+    preparar_backend_kerberos || { echo "Falha ao preparar o backend Kerberos"; exit 1; }
+fi
 
 ERROS=0
 for FILA in "$@"; do

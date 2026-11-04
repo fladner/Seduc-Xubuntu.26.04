@@ -200,6 +200,15 @@ sair() {
     lpstat -p 2>/dev/null | awk '$2 ~ /^SEDUC-/ {print $2}' | while read -r FILA; do
         lpadmin -x "$FILA" || true
     done
+    # Backend Kerberos ligado pelo instalar_impressora_ad.sh
+    if dpkg-divert --listpackage /usr/lib/cups/backend/smb | grep -qx LOCAL; then
+        rm -f /usr/lib/cups/backend/smb
+        dpkg-divert --local --rename --remove /usr/lib/cups/backend/smb || true
+    fi
+    if grep -qs smbspool_krb5_wrapper /etc/apparmor.d/local/usr.sbin.cupsd; then
+        sed -i '/smbspool_krb5_wrapper/d' /etc/apparmor.d/local/usr.sbin.cupsd
+        [ -d /sys/kernel/security/apparmor ] && apparmor_parser -r /etc/apparmor.d/usr.sbin.cupsd || true
+    fi
     relatorio "Configuração local" "desfeita (usuários locais continuam)"
     progresso 100 "Concluído"
 }
