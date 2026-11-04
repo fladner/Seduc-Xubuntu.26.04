@@ -106,7 +106,8 @@ for FILA in "$@"; do
         adicionar)
             if lpadmin -p "$NOME" -E -v "$(uri_fila "$FILA")" -m "$IMPRESSORA_DRIVER" \
                     -D "$FILA" -L "$IMPRESSORA_SERVIDOR" \
-                    -o auth-info-required=negotiate -o printer-is-shared=false; then
+                    -o auth-info-required=negotiate -o printer-is-shared=false \
+                    -o PageSize=A4; then
                 echo "$NOME: instalada ($(uri_fila "$FILA"))"
             else
                 ERROS=1
