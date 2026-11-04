@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    purge)
+        rm -rf /usr/local/seduc/logs
+        rmdir --ignore-fail-on-non-empty /usr/local/seduc 2>/dev/null || true
+        ;;
+esac
+
+exit 0

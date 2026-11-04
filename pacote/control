@@ -1,0 +1,12 @@
+Package: seduc-ad-sige
+Version: @VERSAO@
+Architecture: amd64
+Maintainer: Tadeu Fladiner Costa Pereira <fladner@gmail.com>
+Section: admin
+Priority: optional
+Depends: yad, pkexec, winbind, libpam-winbind, libnss-winbind, krb5-user, libpam-mount, cifs-utils, smbclient (>= 2:4.23~), samba-common-bin, bind9-host, cups, cups-client, rdesktop, wine, wine32:i386
+Installed-Size: @TAMANHO@
+Description: Active Directory, impressoras e SIGE da SEDUC Ceara
+ Paineis do menu SEDUC para os sabores do Ubuntu 26.04: ingresso no dominio
+ com winbind, impressoras do servidor SEDUC com o login do usuario, SIGE no
+ Wine e SIGE Remoto. O winbind e o login do dominio so ligam no ingresso.

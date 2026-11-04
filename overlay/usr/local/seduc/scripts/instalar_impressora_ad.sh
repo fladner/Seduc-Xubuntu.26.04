@@ -71,7 +71,7 @@ preparar_backend_kerberos() {
     if ! grep -qsF "$WRAPPER_KRB5" "$APPARMOR_LOCAL"; then
         echo "$WRAPPER_KRB5 Cx -> third_party," >> "$APPARMOR_LOCAL"
     fi
-    if [[ -d /sys/kernel/security/apparmor ]]; then
+    if [[ -d /sys/kernel/security/apparmor && -f /etc/apparmor.d/usr.sbin.cupsd ]]; then
         apparmor_parser -r /etc/apparmor.d/usr.sbin.cupsd || return 1
     fi
 }

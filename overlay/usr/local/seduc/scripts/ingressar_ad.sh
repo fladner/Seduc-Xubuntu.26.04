@@ -22,6 +22,7 @@ RELATORIO="/usr/local/seduc/logs/ingressar_ad.relatorio"
 SUDOERS="/etc/sudoers.d/seduc-ad"
 LIGHTDM="/etc/lightdm/lightdm.conf"
 TIMESYNC="/etc/systemd/timesyncd.conf.d/seduc-ad.conf"
+CHRONY_FONTE="/etc/chrony/sources.d/seduc-ad.sources"
 
 # shellcheck source=/dev/null
 . "$AD_DIR/ad.conf"
@@ -90,11 +91,47 @@ verificar_rede() {
 # Kerberos recusa relógio com mais de 5 minutos de diferença do servidor
 acertar_hora() {
     progresso 10 "Acertando o relógio com o domínio..."
-    mkdir -p "$(dirname "$TIMESYNC")"
-    printf '[Time]\nNTP=%s\nFallbackNTP=ntp.ubuntu.com\n' "$DOMINIO" > "$TIMESYNC"
-    timedatectl set-ntp true || true
-    systemctl restart systemd-timesyncd || true
-    sleep 3
+    # O Ubuntu 26.04 usa o chrony; o timesyncd fica para quem ainda tem só ele
+    if systemctl list-unit-files chrony.service 2>/dev/null | grep -q '^chrony\.service'; then
+        echo "pool $DOMINIO iburst" > "$CHRONY_FONTE"
+        systemctl enable --now chrony || true
+        chronyc reload sources || true
+        sleep 5
+        chronyc makestep || true
+    else
+        mkdir -p "$(dirname "$TIMESYNC")"
+        printf '[Time]\nNTP=%s\nFallbackNTP=ntp.ubuntu.com\n' "$DOMINIO" > "$TIMESYNC"
+        timedatectl set-ntp true || true
+        systemctl restart systemd-timesyncd || true
+        sleep 3
+    fi
+}
+
+# Tela de login: cada sabor do Ubuntu usa um gerenciador. Só o LightDM precisa de
+# ajuste; GDM e SDDM já têm opção de digitar um usuário fora da lista.
+tela_login() {
+    local GERENTE
+    GERENTE=$(basename "$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null)" .service)
+    case "$GERENTE" in
+        lightdm)
+            if [ -f "$LIGHTDM" ] && grep -q '^greeter-show-manual-login=' "$LIGHTDM"; then
+                sed -i 's/^greeter-show-manual-login=.*/greeter-show-manual-login=true/' "$LIGHTDM"
+            else
+                mkdir -p /etc/lightdm
+                printf '[Seat:*]\ngreeter-show-manual-login=true\n' >> "$LIGHTDM"
+            fi
+            relatorio "Tela de login" "LightDM: campo para digitar o usuário ativado"
+            ;;
+        gdm|gdm3)
+            relatorio "Tela de login" "GDM: use a opção abaixo da lista de usuários para digitar o usuário do domínio"
+            ;;
+        sddm)
+            relatorio "Tela de login" "SDDM: use a opção de outro usuário para digitar o usuário do domínio"
+            ;;
+        *)
+            relatorio "Tela de login" "gerenciador não reconhecido (${GERENTE:-nenhum}): confira se ele permite digitar o usuário"
+            ;;
+    esac
 }
 
 entrar() {
@@ -163,13 +200,8 @@ entrar() {
     fi
     rm -f "$SUDOERS.tmp"
 
-    progresso 85 "Tela de login com o campo para digitar o usuário..."
-    if [ -f "$LIGHTDM" ] && grep -q '^greeter-show-manual-login=' "$LIGHTDM"; then
-        sed -i 's/^greeter-show-manual-login=.*/greeter-show-manual-login=true/' "$LIGHTDM"
-    else
-        mkdir -p /etc/lightdm
-        printf '[Seat:*]\ngreeter-show-manual-login=true\n' >> "$LIGHTDM"
-    fi
+    progresso 85 "Ajustando a tela de login..."
+    tela_login
 
     relatorio "Impressoras" "cada usuário do AD instala pelo menu SEDUC > Impressoras SEDUC"
 
@@ -193,6 +225,10 @@ sair() {
     nsswitch_winbind off
     systemctl disable --now winbind || true
     rm -f "$SUDOERS" "$TIMESYNC"
+    if [ -f "$CHRONY_FONTE" ]; then
+        rm -f "$CHRONY_FONTE"
+        chronyc reload sources || true
+    fi
     [ -f /etc/security/pam_mount.conf.xml.seduc-bkp ] \
         && mv -f /etc/security/pam_mount.conf.xml.seduc-bkp /etc/security/pam_mount.conf.xml
     [ -f "$LIGHTDM" ] && sed -i 's/^greeter-show-manual-login=.*/greeter-show-manual-login=false/' "$LIGHTDM"

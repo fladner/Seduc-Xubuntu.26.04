@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Mesmo estado do build.sh da ISO: winbind, login do domínio e pam_mount só ligam
+# no ingresso (painel_ad.sh); antes disso não podem atrasar o login local.
+# Uma máquina que já está no domínio não é alterada.
+
+set -e
+
+SEDUC="/usr/local/seduc"
+
+case "$1" in
+    configure)
+        install -d -o root -g adm -m 2775 "$SEDUC/logs"
+
+        if ! grep -qiE '^[[:space:]]*security[[:space:]]*=[[:space:]]*ads' /etc/samba/smb.conf 2>/dev/null; then
+            systemctl disable --now winbind.service 2>/dev/null || true
+            DEBIAN_FRONTEND=noninteractive pam-auth-update --remove winbind libpam-mount || true
+            sed -i -E '/^(passwd|group):/ s/[[:space:]]+winbind//g' /etc/nsswitch.conf
+        fi
+        ;;
+esac
+
+exit 0

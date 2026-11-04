@@ -1,0 +1,19 @@
+Pacote seduc-ad-sige: Active Directory, impressoras e SIGE nos sabores do Ubuntu 26.04
+
+Gerar (sem root, usa overlay/ e debs/instaladores/):
+    ./empacotar_deb.sh
+
+Instalar na máquina (o wine32 é de 32 bits e precisa da arquitetura i386 antes):
+    sudo dpkg --add-architecture i386
+    sudo apt update
+    sudo DEBIAN_FRONTEND=noninteractive apt install ./seduc-ad-sige_<versão>_amd64.deb
+
+Só para Ubuntu 26.04 e sabores: em versões antigas o apt recusa o pacote, porque
+o Samba muda o caminho do wrapper de impressão. Na ISO Xubuntu SEDUC não é preciso,
+os mesmos arquivos já vêm nela.
+
+O pacote leva sige.conf e os endereços dos servidores: é de uso interno, não
+publique em release ou repositório público.
+
+Remover o pacote não tira a máquina do domínio: antes use "Sair do domínio" no
+painel Active Directory SEDUC.

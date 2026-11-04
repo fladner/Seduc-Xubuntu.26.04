@@ -1,0 +1,14 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+"http://www.freedesktop.org/standards/menu-spec/menu-1.0.dtd">
+<!-- Menu SEDUC nos ambientes que seguem a especificação de menus (KDE, MATE,
+     LXQt...); no GNOME os atalhos aparecem direto na lista de aplicativos -->
+<Menu>
+    <Name>Applications</Name>
+    <Menu>
+        <Name>SEDUC</Name>
+        <Directory>seduc.directory</Directory>
+        <Include>
+            <Category>SEDUC</Category>
+        </Include>
+    </Menu>
+</Menu>
