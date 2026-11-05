@@ -9,7 +9,7 @@
 # Sem "set -e": em script de interface um erro não pode fechar a janela sem aviso.
 set -uo pipefail
 
-SCRIPT_VERSION="1.3-0"
+SCRIPT_VERSION="1.3-1"
 
 #####################
 ## VARIABLE GLOBAL ##

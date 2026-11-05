@@ -1,3 +1,10 @@
+## 1.3-1 - 05/11/2026
+    - Impressoras SEDUC: filas instaladas com papel A4 (antes US Letter)
+    - SIGE SEDUC: usa sempre o Wine de 32 bits; corrige o erro "WINEARCH is set
+      to 'win32' but this is not supported in wow64 mode"
+    - RustDesk atualizado para 1.5.1
+    - Última versão compilada a partir da ISO 1.0-0
+
 ## 1.3-0 - 03/11/2026
     - Web PKI (Lacuna) no Chrome e no Firefox, com o componente nativo 2.16.1
     - Novo "Instalador de Tokens" no menu SEDUC (painel_tokens.sh): detecta o
@@ -12,11 +19,10 @@
     - Novo painel "Impressoras SEDUC": depois de entrar, o usuário do AD lista
       as impressoras do sedsrv2089 com o próprio login e instala sem a senha
       do administrador (regra do polkit só para essas filas); a impressão usa
-      o ticket Kerberos de quem imprime, sem pedir senha, e as filas vêm em A4
+      o ticket Kerberos de quem imprime, sem pedir senha
     - SIGE SEDUC no menu: Oracle Forms no Wine 10 (32 bits), preparado no
       primeiro uso de cada usuário; precisa do login do domínio
     - SIGE Remoto no menu, por área de trabalho remota (rdesktop)
-    - RustDesk atualizado para 1.5.1
 
 ## 1.2-0 - 29/10/2026
     - Todos os pacotes atualizados para a versão mais nova dos repositórios
