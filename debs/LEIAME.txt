@@ -10,8 +10,8 @@ Epson (https://download-center.epson.com, região Brasil, Linux Deb x64):
              7d6bd4f3ec4ef176beefdba9bd6f63e9ddff41770a95da84cf26a52248b8b9ef
 
 RustDesk (https://github.com/rustdesk/rustdesk/releases):
-  rustdesk-1.5.0-x86_64.deb
-             4e2b9701d25a7ef373f3d09bda584a37d6902f97a6ab15f2e86d4a5783e2a0ec
+  rustdesk-1.5.1-x86_64.deb
+             b5d682ad90cb7571ecbdbf26eef58d3c4514e726a74ef6d08ce3f0b114ef0bd9
 
 Conferir:  sha256sum *.deb
 
