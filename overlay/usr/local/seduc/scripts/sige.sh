@@ -20,6 +20,10 @@ CONF="$INSTALADORES/sige.conf"
 PASTA_SIGE="/mnt/sige"
 PASTA_SIGE5="/mnt/sige5"
 ORANT="C:\\orant"
+# Sempre o Wine de 32 bits: o comando "wine" prefere o wine64 quando os dois estão
+# instalados, e ele recusa o WINEARCH=win32
+WINE32="/usr/bin/wine32"
+WINESERVER="/usr/lib/i386-linux-gnu/wine/wineserver"
 
 export WINEPREFIX="$HOME/.wine-sige"
 export WINEARCH="win32"
@@ -39,8 +43,8 @@ erro() {
 }
 
 verificar() {
-    if ! command -v wine >/dev/null; then
-        erro "O Wine não está instalado neste computador."
+    if [[ ! -x "$WINE32" || ! -x "$WINESERVER" ]]; then
+        erro "O Wine de 32 bits não está instalado neste computador."
         exit 1
     fi
     if [[ ! -r "$CONF" || ! -r "$PACOTE" ]]; then
@@ -55,8 +59,8 @@ verificar() {
 
 preparar() {
     local DRIVE="$WINEPREFIX/drive_c" REG
-    wineboot --init || return 1
-    wineserver -w || true
+    "$WINE32" wineboot --init || return 1
+    "$WINESERVER" -w || true
 
     mkdir -p "$DRIVE/PLANILHAS"
     rm -rf "$DRIVE/orant" "$DRIVE/orant_work"
@@ -67,9 +71,9 @@ preparar() {
     ln -sfn "$PASTA_SIGE" "$WINEPREFIX/dosdevices/j:"
 
     for REG in oracle_novo.reg sige.reg; do
-        wine regedit /S "$ORANT\\regs\\$REG" || return 1
+        "$WINE32" regedit /S "$ORANT\\regs\\$REG" || return 1
     done
-    wineserver -w || true
+    "$WINESERVER" -w || true
     touch "$WINEPREFIX/.seduc-sige-pronto"
 }
 
@@ -98,4 +102,4 @@ if [[ ! -f "$WINEPREFIX/.seduc-sige-pronto" ]]; then
 fi
 
 cd "$WINEPREFIX/drive_c/orant/BIN" || exit 1
-wine "$ORANT\\BIN\\F50RUN32.EXE" "${SIGE_ARGS[@]}"
+"$WINE32" "$ORANT\\BIN\\F50RUN32.EXE" "${SIGE_ARGS[@]}"
