@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ## VARIABLES
-SCRIPT_VERSION="1.1-0"
+SCRIPT_VERSION="1.3-2"
 SEDUC_DIR="/usr/local/seduc"
 LOG_FILE="$SEDUC_DIR/logs/seduc_setup.log"
 SCRIPT_PATH="$(readlink -f "$0")"
@@ -216,6 +216,37 @@ patch_m720q() {
     fi
 }
 
+## PACOTES DE MÍDIAS E DISCOS
+# Os mesmos da ISO 1.3-2 (config/pacotes-instalar.txt) para as máquinas
+# instaladas antes: celular, câmera e pastas de rede no Thunar, e ferramentas
+# para formatar e reparar os sistemas de arquivos menos comuns
+instalar_midias() {
+
+    local pacotes=(
+        gvfs-backends
+        gvfs-fuse
+        btrfs-progs
+        xfsprogs
+        f2fs-tools
+        udftools
+        hfsprogs
+        mtools
+    )
+
+    check_apt || return 1
+
+    log "Instalando pacotes de mídias e discos..."
+
+    apt-get update || log_error "Falha no apt-get update (continuando)"
+
+    if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${pacotes[@]}"; then
+        log "Concluído!"
+    else
+        log_error "Falha na instalação"
+        return 1
+    fi
+}
+
 ## PATCH (HASH)
 apply_patch_if_needed() {
 
@@ -289,7 +320,9 @@ main() {
     check_model
     apply_patch_if_needed remover_snaps
     apply_patch_if_needed remove_apps
-    
+    # Sem rede no boot falha e tenta de novo no próximo
+    apply_patch_if_needed instalar_midias || log_error "Pacotes de mídias pendentes (próximo boot)"
+
     log "Script finalizado com sucesso."
 }
 
