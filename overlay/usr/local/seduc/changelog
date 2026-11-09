@@ -1,3 +1,10 @@
+## 1.3-2 - 09/11/2026
+    - Mídias e discos: celular (Android e iPhone), câmera e pastas de rede no
+      Thunar (gvfs-backends, gvfs-fuse)
+    - Ferramentas para formatar e reparar Btrfs, XFS, F2FS, UDF, HFS+ e FAT
+      (btrfs-progs, xfsprogs, f2fs-tools, udftools, hfsprogs, mtools)
+    - seduc_setup.sh 1.3-2 instala os mesmos pacotes nas máquinas já instaladas
+
 ## 1.3-1 - 05/11/2026
     - Impressoras SEDUC: filas instaladas com papel A4 (antes US Letter)
     - SIGE SEDUC: usa sempre o Wine de 32 bits; corrige o erro "WINEARCH is set
