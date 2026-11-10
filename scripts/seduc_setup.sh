@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ## VARIABLES
-SCRIPT_VERSION="1.3-3"
+SCRIPT_VERSION="1.4-0"
 SEDUC_DIR="/usr/local/seduc"
 LOG_FILE="$SEDUC_DIR/logs/seduc_setup.log"
 SCRIPT_PATH="$(readlink -f "$0")"
@@ -314,6 +314,100 @@ instalar_base_xubuntu() {
     log "Concluído!"
 }
 
+## ARQUIVOS DO OVERLAY
+# Baixa scripts/seduc-arquivos.tar.gz e a assinatura .asc do GitHub (gerados pelo
+# tools/publicar-seduc-setup.sh a partir de config/arquivos-atualizador.txt) e
+# extrai em /. Aplica sempre que o pacote muda (sha256), não uma vez só.
+# Só aceita arquivos e pastas comuns dentro destes destinos:
+ARQUIVOS_PERMITIDOS='^(usr/local/seduc/|usr/local/share/applications/|etc/xdg/menus/applications-merged/)'
+ARQUIVOS_PASTAS='^(usr|usr/local|usr/local/share|etc|etc/xdg|etc/xdg/menus)/$'
+
+instalar_arquivos() {
+
+    local REPO_RAW="" TMP_DIR PACOTE HASH OLD_HASH="" LISTA INVALIDOS PACOTE_VERSAO SISTEMA_VERSAO
+    local HASH_FILE="$FLAG_DIR/seduc-arquivos.sha256"
+
+    # shellcheck source=/dev/null
+    [ -r "$UPDATE_CONF" ] && . "$UPDATE_CONF"
+    if [ -z "$REPO_RAW" ]; then
+        log "Arquivos: atualizador sem repositório configurado"
+        return 0
+    fi
+    if [ ! -s "$UPDATE_KEYRING" ]; then
+        log_error "Chave de assinatura ausente: $UPDATE_KEYRING"
+        return 1
+    fi
+
+    log "Verificando arquivos do sistema SEDUC..."
+    TMP_DIR=$(mktemp -d)
+    PACOTE="$TMP_DIR/seduc-arquivos.tar.gz"
+
+    if ! curl -fsSL --retry 3 -m 120 "$REPO_RAW/scripts/seduc-arquivos.tar.gz" -o "$PACOTE" ||
+       ! curl -fsSL --retry 3 -m 60 "$REPO_RAW/scripts/seduc-arquivos.tar.gz.asc" -o "$PACOTE.asc"; then
+        rm -rf "$TMP_DIR"
+        log_error "Erro ao baixar o pacote de arquivos"
+        return 1
+    fi
+
+    if ! gpgv --keyring "$UPDATE_KEYRING" "$PACOTE.asc" "$PACOTE"; then
+        rm -rf "$TMP_DIR"
+        log_error "Assinatura inválida: pacote de arquivos recusado"
+        return 1
+    fi
+
+    HASH=$(sha256sum "$PACOTE" | cut -d' ' -f1)
+    [ -f "$HASH_FILE" ] && OLD_HASH=$(cat "$HASH_FILE")
+    if [ "$HASH" = "$OLD_HASH" ]; then
+        rm -rf "$TMP_DIR"
+        log "Arquivos já aplicados (${HASH:0:16})"
+        return 0
+    fi
+
+    # Mesmo assinado, só entra o esperado: nada de links, "..", nem outros destinos
+    if ! LISTA=$(tar -tzf "$PACOTE"); then
+        rm -rf "$TMP_DIR"
+        log_error "Pacote de arquivos corrompido"
+        return 1
+    fi
+    INVALIDOS=$(grep -vE "$ARQUIVOS_PERMITIDOS" <<< "$LISTA" | grep -vE "$ARQUIVOS_PASTAS" || true)
+    INVALIDOS+=$'\n'$(grep -E '(^/|(^|/)\.\.(/|$))' <<< "$LISTA" || true)
+    INVALIDOS+=$'\n'$(tar -tvzf "$PACOTE" | grep -v '^[-d]' | awk '{print $6}' || true)
+    INVALIDOS=$(sed '/^$/d' <<< "$INVALIDOS")
+    if [ -n "$INVALIDOS" ]; then
+        rm -rf "$TMP_DIR"
+        log_error "Pacote de arquivos recusado, caminhos não permitidos: $(tr '\n' ' ' <<< "$INVALIDOS")"
+        return 1
+    fi
+
+    # Sistema compilado depois do pacote (ISO mais nova) já tem arquivos mais novos
+    PACOTE_VERSAO=$(tar -xzOf "$PACOTE" usr/local/seduc/arquivos.version 2>/dev/null || true)
+    SISTEMA_VERSAO=$(cat "$SEDUC_DIR/version" 2>/dev/null || true)
+    if [ -z "$PACOTE_VERSAO" ]; then
+        rm -rf "$TMP_DIR"
+        log_error "Pacote de arquivos sem versão: recusado"
+        return 1
+    fi
+    if [ -n "$SISTEMA_VERSAO" ] && [ "$SISTEMA_VERSAO" != "$PACOTE_VERSAO" ] &&
+       [ "$(printf '%s\n%s\n' "$SISTEMA_VERSAO" "$PACOTE_VERSAO" | sort -V | tail -1)" = "$SISTEMA_VERSAO" ]; then
+        mkdir -p "$FLAG_DIR"
+        echo "$HASH" > "$HASH_FILE"
+        rm -rf "$TMP_DIR"
+        log "Arquivos $PACOTE_VERSAO não aplicados: o sistema $SISTEMA_VERSAO é mais novo"
+        return 0
+    fi
+
+    if ! tar -xzf "$PACOTE" -C / --no-same-owner --no-overwrite-dir --keep-directory-symlink; then
+        rm -rf "$TMP_DIR"
+        log_error "Falha ao extrair o pacote de arquivos"
+        return 1
+    fi
+
+    mkdir -p "$FLAG_DIR"
+    echo "$HASH" > "$HASH_FILE"
+    rm -rf "$TMP_DIR"
+    log "Arquivos aplicados: $(grep -vc '/$' <<< "$LISTA") (${HASH:0:16})"
+}
+
 ## PATCH (HASH)
 apply_patch_if_needed() {
 
@@ -383,6 +477,8 @@ main() {
     check_live
     
     check_update || log_error "Falha no update (continuando)"
+    # Arquivos novos do overlay (Central do Suporte...); sem rede tenta no próximo boot
+    instalar_arquivos || log_error "Arquivos do sistema SEDUC pendentes (próximo boot)"
 
     check_model
     apply_patch_if_needed remover_snaps
