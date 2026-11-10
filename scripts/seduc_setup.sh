@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ## VARIABLES
-SCRIPT_VERSION="1.3-2"
+SCRIPT_VERSION="1.3-3"
 SEDUC_DIR="/usr/local/seduc"
 LOG_FILE="$SEDUC_DIR/logs/seduc_setup.log"
 SCRIPT_PATH="$(readlink -f "$0")"
@@ -247,6 +247,73 @@ instalar_midias() {
     fi
 }
 
+## INFRAESTRUTURA DO XUBUNTU COMPLETO
+# Atalhos de programa que aparecem no menu (nome do .desktop)
+atalhos_visiveis() {
+    local A
+    for A in /usr/share/applications/*.desktop; do
+        if grep -q '^Type=Application' "$A" && ! grep -qiE '^(NoDisplay|Hidden)=true' "$A"; then
+            basename "$A"
+        fi
+    done
+    return 0
+}
+
+# A mesma lista de config/pacotes-base-xubuntu.txt (ISO 1.3-3), para as máquinas
+# instaladas antes. Nenhum programa novo no menu: atalho que aparecer na
+# instalação fica oculto por uma cópia com NoDisplay=true em /usr/local
+instalar_base_xubuntu() {
+
+    local pacotes=(
+        heif-gdk-pixbuf
+        network-manager-openvpn-gnome
+        xcursor-themes
+        apt-config-icons-hidpi
+        thunar-media-tags-plugin
+        speech-dispatcher
+        espeak
+        xfce4-xkb-plugin
+        xfce4-places-plugin
+        xfce4-clipman-plugin
+        xfce4-systemload-plugin
+        xfce4-cpugraph-plugin
+        xfce4-netload-plugin
+        xfce4-weather-plugin
+        xfce4-verve-plugin
+        xfce4-mailwatch-plugin
+        xubuntu-docs
+        inxi
+        pastebinit
+    )
+    local ANTES A DESTINO
+
+    check_apt || return 1
+
+    log "Instalando a infraestrutura do Xubuntu completo..."
+
+    ANTES=$(atalhos_visiveis)
+
+    apt-get update || log_error "Falha no apt-get update (continuando)"
+
+    if ! DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${pacotes[@]}"; then
+        log_error "Falha na instalação"
+        return 1
+    fi
+
+    while read -r A; do
+        grep -qxF "$A" <<< "$ANTES" && continue
+        DESTINO="/usr/local/share/applications/$A"
+        [ -e "$DESTINO" ] && continue
+        install -d -m 755 /usr/local/share/applications
+        sed -e '/^NoDisplay=/d' -e '/^\[Desktop Entry\]/a NoDisplay=true' \
+            "/usr/share/applications/$A" > "$DESTINO"
+        chmod 644 "$DESTINO"
+        log "Atalho oculto: $A"
+    done < <(atalhos_visiveis)
+
+    log "Concluído!"
+}
+
 ## PATCH (HASH)
 apply_patch_if_needed() {
 
@@ -322,6 +389,7 @@ main() {
     apply_patch_if_needed remove_apps
     # Sem rede no boot falha e tenta de novo no próximo
     apply_patch_if_needed instalar_midias || log_error "Pacotes de mídias pendentes (próximo boot)"
+    apply_patch_if_needed instalar_base_xubuntu || log_error "Infraestrutura do Xubuntu pendente (próximo boot)"
 
     log "Script finalizado com sucesso."
 }
