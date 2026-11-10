@@ -11,6 +11,7 @@ O `build.sh` parte da ISO anterior, aplica as mudanças deste repositório e ger
 | `overlay/` | Arquivos copiados por cima do sistema, com os mesmos caminhos (`/etc`, `/usr/local/seduc`...) |
 | `iso/` | Arquivos que substituem os da ISO no mesmo caminho (menu de boot `boot/grub/`) |
 | `config/pacotes-instalar.txt` | Pacotes instalados no build |
+| `config/pacotes-base-xubuntu.txt` | Infraestrutura do Xubuntu completo, sem programas novos no menu |
 | `config/pacotes-remover.txt` | Pacotes removidos no build |
 | `config/arquivos-remover.txt` | Arquivos apagados da imagem |
 | `config/*.gpg` | Chaves públicas: repositório NetMonitor e atualizador do `seduc_setup.sh` |
@@ -30,7 +31,7 @@ sudo ./build.sh [ISO_BASE] [VERSAO]
 ```
 
 A ISO sai em `out/`, com o `.sha256` ao lado. Por padrão a base é
-`~/Downloads/xubuntu-seduc-26.04-v1.0-0-amd64.iso`.
+`base/xubuntu-seduc-26.04-v1.3-1-amd64.iso` (a pasta `base/` fica fora do Git).
 
 ## Publicar uma versão nova do seduc_setup.sh
 

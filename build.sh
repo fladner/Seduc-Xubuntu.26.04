@@ -18,12 +18,14 @@ set -euo pipefail
 ## VARIABLE GLOBAL ##
 #####################
 PROJETO="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
-ISO_BASE="${1:-/home/fladner/Downloads/xubuntu-seduc-26.04-v1.0-0-amd64.iso}"
+ISO_BASE="${1:-$PROJETO/base/xubuntu-seduc-26.04-v1.3-1-amd64.iso}"
 VERSAO="${2:-$(cat "$PROJETO/overlay/usr/local/seduc/version")}"
 
 OVERLAY="$PROJETO/overlay"
 PACOTES="$PROJETO/config/pacotes-instalar.txt"
 PACOTES_REMOVER="$PROJETO/config/pacotes-remover.txt"
+# Infraestrutura do Xubuntu completo, sem programas novos no menu
+PACOTES_BASE="$PROJETO/config/pacotes-base-xubuntu.txt"
 ARQUIVOS_REMOVER="$PROJETO/config/arquivos-remover.txt"
 # Chave pública (gpg --export, binária) que assina o seduc_setup.sh no GitHub
 CHAVE_ATUALIZADOR="$PROJETO/config/seduc-updates.gpg"
@@ -118,7 +120,7 @@ aplicar_overlay() {
     log "Aplicando overlay/"
     rsync -a --chown=root:root --chmod=go-w "$OVERLAY/" "$ROOTFS/"
 
-    # Scripts executados como root: só root pode alterar (v1.0 deixava o grupo adm editar)
+    # Scripts executados como root: só root pode alterar (o overlay vem do Git com o usuário)
     local SEDUC="$ROOTFS/usr/local/seduc"
     chown -R root:root "$SEDUC"
     find "$SEDUC" -type d -exec chmod 755 {} +
@@ -154,15 +156,52 @@ aplicar_overlay() {
     done < <(sed 's/#.*//; s/[[:space:]]//g; /^$/d' "$ARQUIVOS_REMOVER")
 }
 
+# Atalhos de programa que aparecem no menu (nome do .desktop)
+atalhos_visiveis() {
+    local A
+    for A in "$ROOTFS"/usr/share/applications/*.desktop; do
+        if grep -q '^Type=Application' "$A" && ! grep -qiE '^(NoDisplay|Hidden)=true' "$A"; then
+            basename "$A"
+        fi
+    done
+    return 0
+}
+
+# Só os programas da ISO aparecem no menu: um atalho novo de pacote que não está
+# em pacotes-instalar.txt nem em debs/ (base do Xubuntu, dependências, atualizações)
+# fica oculto por uma cópia com NoDisplay=true em /usr/local/share/applications
+ocultar_atalhos_novos() {
+    local ANTES="$1" PERMITIDOS="$2" A DONO DESTINO
+    while read -r A; do
+        grep -qxF "$A" "$ANTES" && continue
+        DONO=$(chroot "$ROOTFS" dpkg -S "/usr/share/applications/$A" 2>/dev/null | head -1 | cut -d: -f1 || true)
+        if [[ -n "$DONO" ]] && grep -qxF "$DONO" "$PERMITIDOS"; then
+            log "Atalho novo mantido: $A ($DONO)"
+            continue
+        fi
+        DESTINO="$ROOTFS/usr/local/share/applications/$A"
+        if [[ -e "$DESTINO" ]]; then
+            log "AVISO: atalho novo $A (${DONO:-sem pacote}) não ocultado: $DESTINO já existe"
+            continue
+        fi
+        install -d -m 755 "$(dirname "$DESTINO")"
+        sed -e '/^NoDisplay=/d' -e '/^\[Desktop Entry\]/a NoDisplay=true' \
+            "$ROOTFS/usr/share/applications/$A" > "$DESTINO"
+        chmod 644 "$DESTINO"
+        log "Atalho oculto: $A (${DONO:-sem pacote})"
+    done < <(atalhos_visiveis)
+}
+
 instalar_pacotes() {
-    local LISTA=() DEBS_LISTA=()
+    local LISTA=() LISTA_BASE=() DEBS_LISTA=()
 
     mapfile -t LISTA < <(sed 's/#.*//; s/[[:space:]]//g; /^$/d' "$PACOTES")
+    mapfile -t LISTA_BASE < <(sed 's/#.*//; s/[[:space:]]//g; /^$/d' "$PACOTES_BASE")
     shopt -s nullglob
     DEBS_LISTA=("$DEBS"/*.deb)
     shopt -u nullglob
 
-    if [[ ${#LISTA[@]} -eq 0 && ${#DEBS_LISTA[@]} -eq 0 ]]; then
+    if [[ ${#LISTA[@]} -eq 0 && ${#LISTA_BASE[@]} -eq 0 && ${#DEBS_LISTA[@]} -eq 0 ]]; then
         log "Nenhum pacote para instalar"
         return 0
     fi
@@ -188,16 +227,19 @@ instalar_pacotes() {
     fi
 
     # Repositório do NetMonitor só para o build. Nome diferente do arquivo do
-    # pacote, que instala o próprio .sources e a chave como conffiles.
-    install -m 644 "$CHAVE_NETMONITOR" "$ROOTFS/etc/apt/seduc-build-netmonitor.gpg"
-    printf '%s\n' \
-        'Types: deb' \
-        'URIs: https://apt.fladnernetworks.com.br' \
-        'Suites: stable' \
-        'Components: main' \
-        'Architectures: amd64' \
-        'Signed-By: /etc/apt/seduc-build-netmonitor.gpg' \
-        > "$ROOTFS/etc/apt/sources.list.d/seduc-build-netmonitor.sources"
+    # pacote, que instala o próprio .sources e a chave como conffiles. Com a base
+    # já SEDUC o pacote está lá: os dois juntos o apt recusa (Signed-By conflitante)
+    if [[ ! -f "$ROOTFS/etc/apt/sources.list.d/fladnernetworks-netmonitor.sources" ]]; then
+        install -m 644 "$CHAVE_NETMONITOR" "$ROOTFS/etc/apt/seduc-build-netmonitor.gpg"
+        printf '%s\n' \
+            'Types: deb' \
+            'URIs: https://apt.fladnernetworks.com.br' \
+            'Suites: stable' \
+            'Components: main' \
+            'Architectures: amd64' \
+            'Signed-By: /etc/apt/seduc-build-netmonitor.gpg' \
+            > "$ROOTFS/etc/apt/sources.list.d/seduc-build-netmonitor.sources"
+    fi
 
     local CHROOT_DEBS=()
     if [[ ${#DEBS_LISTA[@]} -gt 0 ]]; then
@@ -231,9 +273,17 @@ instalar_pacotes() {
             apt-get purge -y "${REMOVER[@]}"
     fi
 
-    log "Instalando: ${LISTA[*]} ${CHROOT_DEBS[*]}"
+    # Pacotes que podem trazer atalho novo para o menu: os da lista e os de debs/
+    local ATALHOS_ANTES="$BUILD/atalhos-antes.txt" ATALHOS_PERMITIDOS="$BUILD/atalhos-permitidos.txt"
+    atalhos_visiveis > "$ATALHOS_ANTES"
+    {
+        printf '%s\n' "${LISTA[@]}" | sed 's/:.*//'
+        for D in "${DEBS_LISTA[@]}"; do dpkg-deb -f "$D" Package; done
+    } > "$ATALHOS_PERMITIDOS"
+
+    log "Instalando: ${LISTA[*]} ${LISTA_BASE[*]} ${CHROOT_DEBS[*]}"
     chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
-        apt-get install -y --no-install-recommends "${LISTA[@]}" "${CHROOT_DEBS[@]}"
+        apt-get install -y --no-install-recommends "${LISTA[@]}" "${LISTA_BASE[@]}" "${CHROOT_DEBS[@]}"
 
     # O pacote do NetMonitor traz o próprio .sources para o mesmo repositório:
     # com o temporário junto o apt recusa (Signed-By conflitante)
@@ -273,12 +323,14 @@ instalar_pacotes() {
     # O com.google.Chrome.desktop do pacote vem oculto (NoDisplay=true)
     "$OVERLAY/usr/local/seduc/scripts/atalho_chrome.sh" "$ROOTFS"
 
+    ocultar_atalhos_novos "$ATALHOS_ANTES" "$ATALHOS_PERMITIDOS"
+    rm -f "$ATALHOS_ANTES" "$ATALHOS_PERMITIDOS"
+
     # A imagem é clonada em todas as máquinas: nenhuma identidade pode ir junto
     rm -f "$ROOTFS"/etc/netmonitor-agent/{installation-id,token,config.json}
     rm -rf "$ROOTFS"/root/.config/rustdesk
 
-    # Temporários: os .deb extras e restos que já vinham na ISO base
-    # (lu*.tmp do LibreOffice, hsperfdata do Java: ~29 MB)
+    # Temporários: os .deb extras copiados para o chroot e o que o apt deixar
     find "$ROOTFS/tmp" "$ROOTFS/var/tmp" -mindepth 1 -delete
     rm -rf "$ROOTFS"/var/lib/apt/lists/*
     limpar_chroot

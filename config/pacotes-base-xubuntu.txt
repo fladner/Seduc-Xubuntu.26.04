@@ -1,0 +1,29 @@
+# Infraestrutura do Xubuntu completo (xubuntu-desktop) que a ISO não tinha, sem os
+# programas: o build instala junto com pacotes-instalar.txt e oculta do menu
+# qualquer atalho novo que não seja de um pacote daquela lista ou de debs/.
+# Fora de propósito: programas com equivalente na ISO (atril, engrampa, ristretto,
+# parole...), os removidos pelo projeto (thunderbird, network-manager-pptp-gnome,
+# indicator-messages), brltty (prende adaptadores USB-serial CH340), apport-gtk e
+# whoopsie (relatórios para a Canonical), update-notifier (atualização automática)
+# e xubuntu-community-wallpapers (papel de parede travado).
+# O seduc_setup.sh (instalar_base_xubuntu) instala a mesma lista nas máquinas já
+# instaladas: mude os dois juntos.
+heif-gdk-pixbuf
+network-manager-openvpn-gnome
+xcursor-themes
+apt-config-icons-hidpi
+thunar-media-tags-plugin
+speech-dispatcher
+espeak
+xfce4-xkb-plugin
+xfce4-places-plugin
+xfce4-clipman-plugin
+xfce4-systemload-plugin
+xfce4-cpugraph-plugin
+xfce4-netload-plugin
+xfce4-weather-plugin
+xfce4-verve-plugin
+xfce4-mailwatch-plugin
+xubuntu-docs
+inxi
+pastebinit
