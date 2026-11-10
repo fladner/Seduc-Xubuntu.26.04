@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Instalador de Tokens
+Comment=Instala o driver do token (Safenet, CryptoID, StarSign) e os assinadores digitais
+Exec=/usr/local/seduc/scripts/painel_tokens.sh
+Icon=dialog-password
+Terminal=false
+X-SEDUC-Acesso=todos
+TryExec=/usr/local/seduc/scripts/instalar_tokens.sh

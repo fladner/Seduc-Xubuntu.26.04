@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=SEDUC NetMonitor
+Comment=Instalação e diagnóstico do SEDUC NetMonitor
+Exec=/usr/bin/netmonitor-agent-gui
+Icon=network-workgroup
+Terminal=false
+X-SEDUC-Acesso=admin
+TryExec=/usr/bin/netmonitor-agent-gui

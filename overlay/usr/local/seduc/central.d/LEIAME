@@ -1,0 +1,7 @@
+Itens da Central do Suporte SEDUC (central_suporte.sh).
+Um .desktop por item; a ordem é a do nome do arquivo (10-, 20-...).
+X-SEDUC-Acesso=admin  só para administradores (grupo sudo e grupos do AD
+                      em /usr/local/seduc/ad/ad.conf, GRUPOS_ADMIN)
+X-SEDUC-Acesso=todos  para qualquer usuário
+TryExec=caminho       o item só aparece se o programa existir (máquinas
+                      instaladas por ISOs antigas podem não ter todos)

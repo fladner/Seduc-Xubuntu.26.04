@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Coletar logs para o suporte
+Comment=Junta os registros e as informações do computador num arquivo na Área de Trabalho
+Exec=/usr/local/seduc/scripts/coletar_logs.sh
+Icon=document-save
+Terminal=false
+X-SEDUC-Acesso=todos
+TryExec=/usr/local/seduc/scripts/coletar_logs.sh

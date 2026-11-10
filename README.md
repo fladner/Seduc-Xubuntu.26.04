@@ -10,10 +10,12 @@ O `build.sh` parte da ISO anterior, aplica as mudanças deste repositório e ger
 | `build.sh` | Gera a ISO (precisa de root e internet) |
 | `overlay/` | Arquivos copiados por cima do sistema, com os mesmos caminhos (`/etc`, `/usr/local/seduc`...) |
 | `iso/` | Arquivos que substituem os da ISO no mesmo caminho (menu de boot `boot/grub/`) |
+| `overlay/usr/local/seduc/central.d/` | Itens da Central do Suporte, um `.desktop` por item (veja o `LEIAME` da pasta) |
 | `config/pacotes-instalar.txt` | Pacotes instalados no build |
 | `config/pacotes-base-xubuntu.txt` | Infraestrutura do Xubuntu completo, sem programas novos no menu |
 | `config/pacotes-remover.txt` | Pacotes removidos no build |
 | `config/arquivos-remover.txt` | Arquivos apagados da imagem |
+| `config/arquivos-atualizador.txt` | Arquivos do `overlay/` levados às máquinas já instaladas pelo `seduc_setup.sh` |
 | `config/*.gpg` | Chaves públicas: repositório NetMonitor e atualizador do `seduc_setup.sh` |
 | `debs/` | `.deb` extras (Epson, RustDesk, Web PKI) e `debs/instaladores/` (tokens e assinadores do painel); não versionados, veja `debs/LEIAME.txt` |
 | `scripts/` | `seduc_setup.sh` publicado e assinado, baixado pelas máquinas instaladas |
@@ -37,6 +39,10 @@ A ISO sai em `out/`, com o `.sha256` ao lado. Por padrão a base é
 
 As máquinas instaladas baixam `scripts/seduc_setup.sh` deste repositório no boot e só
 aplicam se a assinatura GPG conferir com `config/seduc-updates.gpg` e a versão for maior.
+
+O mesmo comando gera `scripts/seduc-arquivos.tar.gz`, também assinado, com os arquivos de
+`config/arquivos-atualizador.txt`. A máquina aplica o pacote sempre que ele muda, menos
+quando o sistema dela é mais novo que o pacote (ISO compilada depois).
 
 ```bash
 tools/publicar-seduc-setup.sh <ID-da-chave> .

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Central do Suporte SEDUC
+Comment=Ferramentas de suporte: usuários, atualização, domínio, impressoras e tokens
+Exec=/usr/local/seduc/scripts/central_suporte.sh
+Icon=preferences-system
+Terminal=false
+Categories=SEDUC;GTK;
+StartupNotify=true

@@ -1,0 +1,29 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+"http://www.freedesktop.org/standards/menu-spec/menu-1.0.dtd">
+
+<Menu>
+    <Name>Applications</Name>
+    <Directory>xfce-menu-applications.directory</Directory>
+
+    <!-- Menu SEDUC (principal): Sobre, SIGE, SIGE Remoto e Central do Suporte -->
+    <Menu>
+        <Name>SEDUC</Name>
+        <Directory>xfce-seduc.directory</Directory>
+
+        <!-- Inclui os apps com Categories=SEDUC -->
+        <Include>
+            <And>
+                <Category>SEDUC</Category>
+            </And>
+        </Include>
+
+        <!-- Ferramentas de suporte: abertas pela Central do Suporte
+             (/usr/local/seduc/central.d), fora do menu -->
+        <Exclude>
+            <Filename>painel_ad.desktop</Filename>
+            <Filename>painel_impressora_ad.desktop</Filename>
+            <Filename>painel_tokens.desktop</Filename>
+            <Filename>seduc-netmonitor.desktop</Filename>
+        </Exclude>
+    </Menu>
+</Menu>

@@ -1,0 +1,16 @@
+# Arquivos do overlay/ levados às máquinas já instaladas pelo seduc_setup.sh.
+# Um caminho por linha, relativo a overlay/ (arquivo ou pasta); # é comentário.
+# O tools/publicar-seduc-setup.sh junta tudo em scripts/seduc-arquivos.tar.gz,
+# assinado com a mesma chave do seduc_setup.sh. A máquina só extrai se a
+# assinatura conferir, e só dentro de usr/local/seduc/, usr/local/share/applications/
+# e etc/xdg/menus/applications-merged/ (veja instalar_arquivos no seduc_setup.sh).
+
+# Central do Suporte (1.4-0)
+usr/local/seduc/central.d
+usr/local/seduc/scripts/central_suporte.sh
+usr/local/seduc/scripts/atualizar_sistema.sh
+usr/local/seduc/scripts/atualizar_sistema_root.sh
+usr/local/seduc/scripts/coletar_logs.sh
+usr/local/seduc/scripts/welcome.sh
+usr/local/share/applications/central-suporte.desktop
+etc/xdg/menus/applications-merged/xfce-applications.menu

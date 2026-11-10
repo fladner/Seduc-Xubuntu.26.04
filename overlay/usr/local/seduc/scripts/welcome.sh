@@ -3,7 +3,7 @@
 # Sem "set -e": em script de interface um erro não pode fechar a janela sem aviso.
 set -uo pipefail
 
-SCRIPT_VERSION="1.1-0"
+SCRIPT_VERSION="1.4-0"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -169,8 +169,17 @@ finish() {
 ##########
 ## MAIN ##
 ##########
+# --central: aberto pela Central do Suporte, roda mesmo depois da pós-instalação
+CENTRAL=0
+[ "${1:-}" = "--central" ] && CENTRAL=1
+
 check_live
-check_flag
+(( CENTRAL )) || check_flag
+if (( CENTRAL )) && ! id -nG | tr ' ' '\n' | grep -qx sudo; then
+    yad --info --title="Boas-vindas e usuários" --center --borders=10 --button="OK:0" \
+        --text="Só o administrador local do computador (grupo sudo) cria os usuários."
+    exit 0
+fi
 check_admin
 show_welcome || exit 0
 

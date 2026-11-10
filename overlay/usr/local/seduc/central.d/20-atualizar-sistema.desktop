@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Atualizar o sistema
+Comment=Atualiza todos os programas e o sistema SEDUC
+Exec=/usr/local/seduc/scripts/atualizar_sistema.sh
+Icon=system-software-update
+Terminal=false
+X-SEDUC-Acesso=admin
+TryExec=/usr/local/seduc/scripts/atualizar_sistema_root.sh

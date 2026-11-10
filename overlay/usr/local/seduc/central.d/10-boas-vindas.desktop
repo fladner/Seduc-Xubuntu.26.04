@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Boas-vindas e usuários
+Comment=Cria os usuários da escola (aluno, núcleo gestor e apoio)
+Exec=/usr/local/seduc/scripts/welcome.sh --central
+Icon=system-users
+Terminal=false
+X-SEDUC-Acesso=admin
+TryExec=/usr/local/seduc/scripts/criar_usuarios.sh
