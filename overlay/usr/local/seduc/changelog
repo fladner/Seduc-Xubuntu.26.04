@@ -1,3 +1,10 @@
+## 1.4-1 - 10/11/2026
+    - HD e pendrive NTFS montam pelo ntfs-3g: o driver ntfs3 do kernel recusava
+      o disco desligado sem "Remover com segurança" ou usado no Windows com
+      Inicialização Rápida ("wrong fs type, bad option, bad superblock");
+      Windows hibernado monta só leitura (/etc/udisks2/mount_options.conf)
+    - seduc_setup.sh 1.4-1 aplica a mesma correção nas máquinas já instaladas
+
 ## 1.4-0 - 10/11/2026
     - Nova "Central do Suporte SEDUC" no menu SEDUC (central_suporte.sh): reúne
       Boas-vindas e usuários, Atualizar o sistema, Active Directory,

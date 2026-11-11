@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ## VARIABLES
-SCRIPT_VERSION="1.4-0"
+SCRIPT_VERSION="1.4-1"
 SEDUC_DIR="/usr/local/seduc"
 LOG_FILE="$SEDUC_DIR/logs/seduc_setup.log"
 SCRIPT_PATH="$(readlink -f "$0")"
@@ -408,6 +408,27 @@ instalar_arquivos() {
     log "Arquivos aplicados: $(grep -vc '/$' <<< "$LISTA") (${HASH:0:16})"
 }
 
+## NTFS PELO NTFS-3G
+# O mesmo /etc/udisks2/mount_options.conf da ISO 1.4-1: o ntfs3 do kernel recusa
+# o HD NTFS "sujo" ("wrong fs type, bad option, bad superblock"); o ntfs-3g monta
+corrigir_ntfs() {
+
+    log "Montagem de NTFS pelo ntfs-3g..."
+
+    mkdir -p /etc/udisks2
+    cat > /etc/udisks2/mount_options.conf <<'EOF'
+# SEDUC: HD e pendrive NTFS montam pelo ntfs-3g (driver "ntfs").
+# O padrão do udisks é o ntfs3 do kernel, que recusa o disco NTFS marcado como
+# "sujo" (desligado sem "Remover com segurança", Inicialização Rápida ou
+# hibernação do Windows) com o erro "wrong fs type, bad option, bad superblock".
+# O ntfs-3g monta esse disco; se o Windows estiver hibernado, monta só leitura.
+[defaults]
+ntfs_drivers=ntfs,ntfs3
+EOF
+    chmod 644 /etc/udisks2/mount_options.conf
+    log "Concluído!"
+}
+
 ## PATCH (HASH)
 apply_patch_if_needed() {
 
@@ -486,6 +507,7 @@ main() {
     # Sem rede no boot falha e tenta de novo no próximo
     apply_patch_if_needed instalar_midias || log_error "Pacotes de mídias pendentes (próximo boot)"
     apply_patch_if_needed instalar_base_xubuntu || log_error "Infraestrutura do Xubuntu pendente (próximo boot)"
+    apply_patch_if_needed corrigir_ntfs
 
     log "Script finalizado com sucesso."
 }
