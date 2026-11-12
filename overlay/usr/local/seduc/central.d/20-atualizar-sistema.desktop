@@ -7,3 +7,4 @@ Icon=system-software-update
 Terminal=false
 X-SEDUC-Acesso=admin
 TryExec=/usr/local/seduc/scripts/atualizar_sistema_root.sh
+X-SEDUC-Web=atualizar

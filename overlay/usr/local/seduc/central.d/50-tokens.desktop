@@ -7,3 +7,4 @@ Icon=dialog-password
 Terminal=false
 X-SEDUC-Acesso=todos
 TryExec=/usr/local/seduc/scripts/instalar_tokens.sh
+X-SEDUC-Web=tokens

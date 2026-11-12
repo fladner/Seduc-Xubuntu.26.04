@@ -15,6 +15,11 @@ RustDesk (https://github.com/rustdesk/rustdesk/releases):
 
 Conferir:  sha256sum *.deb
 
+Central do Suporte em web (repositório fladner/central-suporte, compilado do
+código; o pacote/empacotar.sh gera o .deb e o pacote de entrega com o incorporar.sh):
+  seduc-central-suporte_1.0.1_amd64.deb
+             8bfa79b176c43e88e69ee5d7f9404024e1cdb796a55fe54e6b1eee5ae399722d
+
 Web PKI (Lacuna) - componente nativo, instalado no build:
   https://get.webpkiplugin.com/Downloads/2.16.1/setup-deb-64
   webpki-plugin-2.16.1-amd64.deb (pacote lacuna-webpki)
@@ -30,7 +35,8 @@ instalador_drivers_token.sh; os .deb saem de dentro dos .zip:
                                        -> safesign-ic-standard-4.4.0.0-ub2404-amd64.deb
   Logus: assinador_digital_linux_com_jre.tar.gz e Logus.png
   BRy:   bry-ExtensionModule.deb e bry-assinatura-digital.xpi
-  Oracle Java 8 e Assinador SERPRO não vão na ISO: o painel baixa na hora.
+  Oracle Java 8 e Assinador SERPRO (instalador oficial 4.6.0) não vão na ISO:
+  o painel baixa na hora.
 SHA-256 (cd instaladores && sha256sum -c):
   5a1af479d1c517698e6d867c73b93795fbcf36c60b8caecd7d846383cb9e84c2  assinador_digital_linux_com_jre.tar.gz
   67133e0edfb87a30b6cdee1e1772d86e2609b95b70f463764dccc5231f808b13  bry-assinatura-digital.xpi

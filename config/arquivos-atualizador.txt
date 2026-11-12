@@ -14,3 +14,13 @@ usr/local/seduc/scripts/coletar_logs.sh
 usr/local/seduc/scripts/welcome.sh
 usr/local/share/applications/central-suporte.desktop
 etc/xdg/menus/applications-merged/xfce-applications.menu
+
+# Perfil laboratório sem remover o Usuários e grupos (1.4-2)
+usr/local/seduc/scripts/configurar_perfil_lab.sh
+
+# Central do Suporte em web (1.5-0): scripts com os modos da Central web; o
+# programa central-suporte vem do pacote seduc-central-suporte (debs/)
+usr/local/seduc/scripts/painel_tokens.sh
+usr/local/seduc/scripts/instalar_tokens.sh
+usr/local/seduc/scripts/painel_ad.sh
+usr/local/seduc/scripts/painel_impressora_ad.sh

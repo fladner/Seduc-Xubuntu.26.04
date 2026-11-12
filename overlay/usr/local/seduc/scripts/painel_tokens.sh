@@ -7,7 +7,7 @@
 # Sem "set -e": em script de interface um erro não pode fechar a janela sem aviso.
 set -uo pipefail
 
-SCRIPT_VERSION="1.3-0"
+SCRIPT_VERSION="1.5-0"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -156,9 +156,31 @@ mostrar_relatorio() {
         --button="OK:0" "${LINHAS[@]}"
 }
 
+# --listar: para a Central do Suporte em web. Uma linha por opção, separada por "|":
+#   LIVE                               (sistema em modo de teste: o instalador não funciona)
+#   TOKEN|chave|nome|1 se conectado
+#   EXTRA|chave|TRUE/FALSE|nome|observação
+listar() {
+    local DETECTADO T CHAVE NOME
+    grep -q "casper" /proc/cmdline && echo "LIVE"
+    DETECTADO=$(detectar_token || true)
+    for T in "${TOKENS[@]}"; do
+        IFS='|' read -r CHAVE _ NOME <<< "$T"
+        [[ "$CHAVE" == "$DETECTADO" ]] && echo "TOKEN|$CHAVE|$NOME|1" || echo "TOKEN|$CHAVE|$NOME|0"
+    done
+    for T in "${EXTRAS[@]}"; do
+        echo "EXTRA|$T"
+    done
+}
+
 ##########
 ## MAIN ##
 ##########
+if [ "${1:-}" = "--listar" ]; then
+    listar
+    exit 0
+fi
+
 check_live
 
 while :; do

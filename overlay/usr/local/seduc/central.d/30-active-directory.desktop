@@ -7,3 +7,4 @@ Icon=network-workgroup
 Terminal=false
 X-SEDUC-Acesso=admin
 TryExec=/usr/local/seduc/scripts/ingressar_ad.sh
+X-SEDUC-Web=ad

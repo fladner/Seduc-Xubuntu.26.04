@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=SEDUC NetMonitor
-Comment=Instalação e diagnóstico do SEDUC NetMonitor
+Name=VDE-CE
+Comment=Velocímetro Digital Escolar: status e provisionamento do agente
 Exec=/usr/bin/netmonitor-agent-gui
 Icon=network-workgroup
 Terminal=false

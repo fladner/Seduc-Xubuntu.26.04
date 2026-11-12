@@ -7,3 +7,4 @@ Icon=system-users
 Terminal=false
 X-SEDUC-Acesso=admin
 TryExec=/usr/local/seduc/scripts/criar_usuarios.sh
+X-SEDUC-Web=boas-vindas

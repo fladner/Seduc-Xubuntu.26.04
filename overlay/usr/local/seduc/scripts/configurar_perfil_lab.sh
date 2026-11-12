@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-SCRIPT_VERSION="1.2-0"
+SCRIPT_VERSION="1.4-2"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -111,8 +111,8 @@ backup_conf() {
 # Aplica as configurações personalizadas do XFCE
 conf_desktop() {
        
-    # Remove screensaver
-    apt remove --purge -y xfce4-screensaver gnome-system-tools >/dev/null 2>&1
+    # Remove o protetor de tela (o gerenciador de usuários, gnome-system-tools, fica)
+    apt remove --purge -y xfce4-screensaver >/dev/null 2>&1
 
     # Backup xfce4-desktop
     local XFCE_DESKTOP_CONF="/etc/xdg/xdg-xubuntu/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml"

@@ -1,3 +1,36 @@
+## 1.5-1 - 12/11/2026
+    - Central do Suporte e Boas-vindas na web abrem numa janela de 1000x720 no
+      centro do monitor principal (antes grande e no canto esquerdo, com vários
+      monitores); a janela usa um perfil próprio do Chrome em ~/.cache
+      (seduc-central-suporte 1.0.1)
+    - "Sobre o Xubuntu SEDUC" na Central do Suporte, para todos os usuários; o
+      Sobre continua também no bloco SEDUC do menu
+
+## 1.5-0 - 12/11/2026
+    - Central do Suporte em web (pacote seduc-central-suporte 1.0.0, em debs/):
+      janela de aplicativo do Chrome no lugar do yad, com as ferramentas na mesma
+      janela e botão de volta; sem o pacote, ou com --yad, continua no yad
+    - Páginas web de Boas-vindas e usuários, Atualizar o sistema, Active Directory,
+      Impressoras SEDUC, Instalador de Tokens e Coletar logs; o trabalho continua
+      nos mesmos scripts root, pelo pkexec (itens com X-SEDUC-Web em central.d)
+    - Modos para a Central web: --listar em welcome.sh, painel_tokens.sh,
+      painel_ad.sh e painel_impressora_ad.sh; --kinit e --padrao em
+      painel_impressora_ad.sh; --sem-janela em coletar_logs.sh
+    - Primeiro boot abre as Boas-vindas na Central web quando ela está instalada
+    - Instalador de Tokens: Assinador SERPRO pelo instalador oficial 4.6.0 (o
+      repositório APT do SERPRO não responde), sem iniciar com o sistema; tira a
+      fonte APT antiga do SERPRO
+    - Item SEDUC NetMonitor da Central passa a se chamar VDE-CE
+    - seduc_setup.sh 1.5-0 leva os scripts novos às máquinas já instaladas; nelas
+      a Central continua no yad até o pacote seduc-central-suporte chegar
+
+## 1.4-2 - 11/11/2026
+    - Usuários e grupos (gnome-system-tools) não é mais removido: o perfil
+      laboratório, aplicado ao criar o aluno no Boas-vindas, desinstalava o
+      gerenciador de usuários junto com o protetor de tela
+    - seduc_setup.sh 1.4-2 reinstala o Usuários e grupos nas máquinas em que
+      foi removido e leva o perfil laboratório corrigido
+
 ## 1.4-1 - 10/11/2026
     - HD e pendrive NTFS montam pelo ntfs-3g: o driver ntfs3 do kernel recusava
       o disco desligado sem "Remover com segurança" ou usado no Windows com

@@ -8,7 +8,7 @@
 # Sem "set -e": em script de interface um erro não pode fechar a janela sem aviso.
 set -uo pipefail
 
-SCRIPT_VERSION="1.4-0"
+SCRIPT_VERSION="1.5-0"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -64,6 +64,12 @@ montar_itens() {
 ##########
 ## MAIN ##
 ##########
+# Central do Suporte em web (pacote seduc-central-suporte): janela de aplicativo do Chrome,
+# com as ferramentas na mesma janela. Sem o pacote, ou com --yad, segue no yad.
+if [ "${1:-}" != "--yad" ] && command -v central-suporte >/dev/null 2>&1; then
+    exec central-suporte
+fi
+
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 

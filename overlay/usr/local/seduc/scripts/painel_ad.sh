@@ -8,7 +8,7 @@
 # Sem "set -e": em script de interface um erro não pode fechar a janela sem aviso.
 set -uo pipefail
 
-SCRIPT_VERSION="1.3-0"
+SCRIPT_VERSION="1.5-0"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -107,9 +107,26 @@ mostrar_relatorio() {
     return 0
 }
 
+# --listar: para a Central do Suporte em web. Uma linha por informação, separada por "|":
+#   LIVE                  (sistema em modo de teste: o ingresso não funciona)
+#   DOMINIO|<domínio do ad.conf>
+#   NO_DOMINIO|<domínio atual>   (só se o computador já estiver no domínio)
+#   COMPUTADOR|<nome NetBIOS sugerido>
+listar() {
+    grep -q "casper" /proc/cmdline && echo "LIVE"
+    echo "DOMINIO|$DOMINIO"
+    no_dominio && echo "NO_DOMINIO|$(wbinfo --own-domain 2>/dev/null)"
+    echo "COMPUTADOR|$(nome_padrao)"
+}
+
 ##########
 ## MAIN ##
 ##########
+if [ "${1:-}" = "--listar" ]; then
+    listar
+    exit 0
+fi
+
 check_live
 
 while :; do

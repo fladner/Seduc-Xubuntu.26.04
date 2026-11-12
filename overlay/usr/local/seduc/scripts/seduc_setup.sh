@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ## VARIABLES
-SCRIPT_VERSION="1.4-1"
+SCRIPT_VERSION="1.5-1"
 SEDUC_DIR="/usr/local/seduc"
 LOG_FILE="$SEDUC_DIR/logs/seduc_setup.log"
 SCRIPT_PATH="$(readlink -f "$0")"
@@ -429,6 +429,30 @@ EOF
     log "Concluído!"
 }
 
+## GERENCIADOR DE USUÁRIOS
+# O perfil laboratório (aluno criado pelo Boas-vindas) removia o gnome-system-tools
+# ("Usuários e grupos") até a 1.4-1; devolve nas máquinas em que foi removido
+instalar_usuarios_grupos() {
+
+    if dpkg-query -W -f='${Status}' gnome-system-tools 2>/dev/null | grep -q 'ok installed'; then
+        log "Usuários e grupos (gnome-system-tools) já instalado"
+        return 0
+    fi
+
+    check_apt || return 1
+
+    log "Reinstalando Usuários e grupos (gnome-system-tools)..."
+
+    apt-get update || log_error "Falha no apt-get update (continuando)"
+
+    if DEBIAN_FRONTEND=noninteractive apt-get install -y gnome-system-tools; then
+        log "Concluído!"
+    else
+        log_error "Falha na instalação"
+        return 1
+    fi
+}
+
 ## PATCH (HASH)
 apply_patch_if_needed() {
 
@@ -508,6 +532,7 @@ main() {
     apply_patch_if_needed instalar_midias || log_error "Pacotes de mídias pendentes (próximo boot)"
     apply_patch_if_needed instalar_base_xubuntu || log_error "Infraestrutura do Xubuntu pendente (próximo boot)"
     apply_patch_if_needed corrigir_ntfs
+    apply_patch_if_needed instalar_usuarios_grupos || log_error "Usuários e grupos pendente (próximo boot)"
 
     log "Script finalizado com sucesso."
 }

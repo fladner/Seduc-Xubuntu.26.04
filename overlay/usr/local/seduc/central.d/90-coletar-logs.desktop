@@ -7,3 +7,4 @@ Icon=document-save
 Terminal=false
 X-SEDUC-Acesso=todos
 TryExec=/usr/local/seduc/scripts/coletar_logs.sh
+X-SEDUC-Web=coletar-logs

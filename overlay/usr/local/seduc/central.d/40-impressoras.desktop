@@ -7,3 +7,4 @@ Icon=printer
 Terminal=false
 X-SEDUC-Acesso=todos
 TryExec=/usr/local/seduc/scripts/instalar_impressora_ad.sh
+X-SEDUC-Web=impressoras

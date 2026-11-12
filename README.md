@@ -17,7 +17,7 @@ O `build.sh` parte da ISO anterior, aplica as mudanças deste repositório e ger
 | `config/arquivos-remover.txt` | Arquivos apagados da imagem |
 | `config/arquivos-atualizador.txt` | Arquivos do `overlay/` levados às máquinas já instaladas pelo `seduc_setup.sh` |
 | `config/*.gpg` | Chaves públicas: repositório NetMonitor e atualizador do `seduc_setup.sh` |
-| `debs/` | `.deb` extras (Epson, RustDesk, Web PKI) e `debs/instaladores/` (tokens e assinadores do painel); não versionados, veja `debs/LEIAME.txt` |
+| `debs/` | `.deb` extras (Epson, RustDesk, Web PKI, Central do Suporte em web) e `debs/instaladores/` (tokens e assinadores do painel); não versionados, veja `debs/LEIAME.txt` |
 | `scripts/` | `seduc_setup.sh` publicado e assinado, baixado pelas máquinas instaladas |
 | `tools/` | Ferramentas de manutenção |
 | `overlay/usr/local/seduc/changelog` | O que mudou em cada versão |
