@@ -5,6 +5,6 @@ Comment=Instala as impressoras do servidor SEDUC (para usuários do domínio)
 Exec=/usr/local/seduc/scripts/painel_impressora_ad.sh
 Icon=printer
 Terminal=false
-X-SEDUC-Acesso=todos
+X-SEDUC-Acesso=ad
 TryExec=/usr/local/seduc/scripts/instalar_impressora_ad.sh
 X-SEDUC-Web=impressoras

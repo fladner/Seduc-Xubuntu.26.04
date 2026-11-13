@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<!-- Restaurar navegadores e Restaurar painel e tela (Central do Suporte): a correção do
+     perfil só segue com a senha do administrador (técnico da CREDE), a cada vez -->
+<policyconfig>
+  <vendor>SEDUC Ceará</vendor>
+  <action id="br.gov.ce.seduc.confirmar-tecnico">
+    <description>Confirmar a senha do técnico</description>
+    <message>A restauração do perfil precisa da senha do administrador (técnico da CREDE)</message>
+    <icon_name>dialog-password</icon_name>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/local/seduc/scripts/confirmar_tecnico.sh</annotate>
+  </action>
+</policyconfig>

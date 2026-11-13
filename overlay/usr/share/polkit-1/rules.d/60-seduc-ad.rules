@@ -1,0 +1,42 @@
+// SEDUC: permissões dos usuários do Active Directory na sessão ativa deste computador.
+// Usuário do AD = UID na faixa do idmap do winbind (ad/smb.conf: 1000000 - 19999999).
+//   - Instalador de Tokens (instalar_tokens.sh) sem a senha do administrador; o script
+//     só aceita os tokens e programas da lista dele.
+//   - Pendrive, HD externo, cartão de memória e leitor de CD/DVD ligados na USB: montar,
+//     desbloquear (criptografado), ejetar e desligar, mesmo quando o udisks trata o
+//     disco como interno (HD externo em gaveta USB pede a senha do administrador).
+
+function seducUsuarioAD(usuario) {
+    try {
+        var uid = parseInt(polkit.spawn(["/usr/bin/id", "-u", "--", usuario]), 10);
+        return uid >= 1000000 && uid <= 19999999;
+    } catch (e) {
+        return false;
+    }
+}
+
+var seducAcoesUSB = [
+    "org.freedesktop.udisks2.filesystem-mount",
+    "org.freedesktop.udisks2.filesystem-mount-system",
+    "org.freedesktop.udisks2.encrypted-unlock",
+    "org.freedesktop.udisks2.encrypted-unlock-system",
+    "org.freedesktop.udisks2.eject-media",
+    "org.freedesktop.udisks2.eject-media-system",
+    "org.freedesktop.udisks2.power-off-drive",
+    "org.freedesktop.udisks2.power-off-drive-system"
+];
+
+polkit.addRule(function(action, subject) {
+    if (!subject.local || !subject.active) {
+        return polkit.Result.NOT_HANDLED;
+    }
+    if (action.id == "br.gov.ce.seduc.instalar-tokens" && seducUsuarioAD(subject.user)) {
+        return polkit.Result.YES;
+    }
+    if (seducAcoesUSB.indexOf(action.id) >= 0 &&
+        action.lookup("drive.removable.bus") == "usb" &&
+        seducUsuarioAD(subject.user)) {
+        return polkit.Result.YES;
+    }
+    return polkit.Result.NOT_HANDLED;
+});

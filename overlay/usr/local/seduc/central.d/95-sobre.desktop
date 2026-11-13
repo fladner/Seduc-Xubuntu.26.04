@@ -2,8 +2,9 @@
 Type=Application
 Name=Sobre o Xubuntu SEDUC
 Comment=Versão do sistema SEDUC, compilação e data da instalação
-Exec=/usr/local/seduc/scripts/about_system.sh
+Exec=/usr/local/seduc/scripts/about_system.sh --yad
 Icon=dialog-information
 Terminal=false
 X-SEDUC-Acesso=todos
 TryExec=/usr/local/seduc/scripts/about_system.sh
+X-SEDUC-Web=sobre

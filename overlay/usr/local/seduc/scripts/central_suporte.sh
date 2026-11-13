@@ -3,12 +3,13 @@
 # Central do Suporte SEDUC (menu SEDUC).
 # Mostra como ícones os itens de /usr/local/seduc/central.d (um .desktop por item,
 # na ordem do nome do arquivo). Itens com X-SEDUC-Acesso=admin só aparecem para
-# administradores; TryExec esconde o item quando o programa não está instalado.
+# administradores, e com X-SEDUC-Acesso=ad, para administradores e usuários do AD;
+# TryExec esconde o item quando o programa não está instalado.
 
 # Sem "set -e": em script de interface um erro não pode fechar a janela sem aviso.
 set -uo pipefail
 
-SCRIPT_VERSION="1.5-0"
+SCRIPT_VERSION="1.6-2"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -43,6 +44,13 @@ eh_admin() {
     return 1
 }
 
+# Usuário do AD: UID na faixa do idmap do winbind (ad/smb.conf: 1000000 - 19999999)
+usuario_ad() {
+    local U
+    U=$(id -u)
+    (( U >= 1000000 && U <= 19999999 ))
+}
+
 campo() {
     sed -n "s/^$1=//p" "$2" | head -1
 }
@@ -56,7 +64,11 @@ montar_itens() {
         ACESSO=$(campo X-SEDUC-Acesso "$ARQ")
         TRY=$(campo TryExec "$ARQ")
         [[ "$ACESSO" == "admin" && "$ADMIN" -ne 1 ]] && continue
+        # ad: administradores e usuários do AD (Impressoras SEDUC)
+        [[ "$ACESSO" == "ad" && "$ADMIN" -ne 1 ]] && ! usuario_ad && continue
         [[ -n "$TRY" && ! -x "$TRY" ]] && continue
+        # Item só da Central em web (página em bash, sem Exec): não abre no yad
+        [ -n "$(campo Exec "$ARQ")" ] || continue
         cp "$ARQ" "$DESTINO/"
     done
 }

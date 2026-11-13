@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
 # Chamado pelo welcome.sh via pkexec com os logins marcados, na ordem da lista.
-# Uso: criar_usuarios.sh <login> [login...]
+# Uso: criar_usuarios.sh [--id <escola|crede> <INEP|CREDE> <AMBIENTE> <nome da escola> | --manter-nome] <login> [login...]
+# Com --id (Central do Suporte), o nome do computador vem do identificar_computador.sh;
+# sem ele, do primeiro usuário marcado, como antes.
 
 set -euo pipefail
 
-SCRIPT_VERSION="1.1-0"
+SCRIPT_VERSION="1.6-1"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -55,6 +57,20 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
+IDENT=()
+MANTER_NOME=0
+if [[ "${1:-}" == "--manter-nome" ]]; then
+    MANTER_NOME=1
+    shift
+elif [[ "${1:-}" == "--id" ]]; then
+    if [[ $# -lt 5 ]]; then
+        echo "--id pede tipo, código, ambiente e nome da escola."
+        exit 1
+    fi
+    IDENT=("$2" "$3" "$4" "$5")
+    shift 5
+fi
+
 if [[ $# -eq 0 ]]; then
     echo "Nenhum usuário informado."
     exit 1
@@ -74,6 +90,11 @@ for LOGIN in "$@"; do
     fi
 done
 
+# --manter-nome (Boas-vindas sem INEP): os scripts de perfil trocam o nome do
+# computador; o nome de antes volta no fim
+NOME_ANTES=$(hostnamectl hostname 2>/dev/null || hostname)
+HOSTS_ANTES=$(grep -m1 '^127\.0\.1\.1' /etc/hosts || true)
+
 # Cada script de perfil define hostname e tema, então o último a rodar vence.
 # Rodamos em ordem inversa para que o primeiro marcado defina o computador.
 for (( i=${#ESCOLA[@]}-1; i>=0; i-- )); do
@@ -87,6 +108,18 @@ done
 if (( ALUNO )); then
     echo "--- Configurando Aluno (laboratório)"
     "$SCRIPTS/configurar_perfil_lab.sh" "Aluno" "alu" "lab"
+fi
+
+# Por último: o nome pela escola/CREDE, ambiente e serial substitui o dos perfis
+if (( ${#IDENT[@]} )); then
+    echo "--- Identificando o computador"
+    "$SCRIPTS/identificar_computador.sh" "${IDENT[@]}"
+elif (( MANTER_NOME )) && [[ -n "$NOME_ANTES" ]]; then
+    echo "--- Mantendo o nome do computador: $NOME_ANTES"
+    hostnamectl hostname "$NOME_ANTES"
+    if [[ -n "$HOSTS_ANTES" ]]; then
+        sed -i "s/^127\.0\.1\.1.*/$HOSTS_ANTES/" /etc/hosts
+    fi
 fi
 
 echo "===== FIM $(date) ====="

@@ -24,3 +24,12 @@ usr/local/seduc/scripts/painel_tokens.sh
 usr/local/seduc/scripts/instalar_tokens.sh
 usr/local/seduc/scripts/painel_ad.sh
 usr/local/seduc/scripts/painel_impressora_ad.sh
+
+usr/local/seduc/ambientes.conf
+usr/local/seduc/scripts/identificar_computador.sh
+usr/local/seduc/scripts/criar_usuarios.sh
+
+# Páginas em bash da Central do Suporte (1.6-0): central.d/paginas/ vai com a pasta central.d
+usr/local/seduc/scripts/central_pagina.sh
+usr/local/seduc/scripts/renomear_computador.sh
+usr/local/seduc/scripts/confirmar_tecnico.sh

@@ -5,7 +5,7 @@
     <Name>Applications</Name>
     <Directory>xfce-menu-applications.directory</Directory>
 
-    <!-- Menu SEDUC (principal): Sobre, SIGE, SIGE Remoto e Central do Suporte -->
+    <!-- Menu SEDUC (principal): SIGE, SIGE Remoto e Central do Suporte -->
     <Menu>
         <Name>SEDUC</Name>
         <Directory>xfce-seduc.directory</Directory>
@@ -18,8 +18,10 @@
         </Include>
 
         <!-- Ferramentas de suporte: abertas pela Central do Suporte
-             (/usr/local/seduc/central.d), fora do menu -->
+             (/usr/local/seduc/central.d), fora do menu; o Sobre (about-system.desktop,
+             da ISO base) também fica só na Central -->
         <Exclude>
+            <Filename>about-system.desktop</Filename>
             <Filename>painel_ad.desktop</Filename>
             <Filename>painel_impressora_ad.desktop</Filename>
             <Filename>painel_tokens.desktop</Filename>

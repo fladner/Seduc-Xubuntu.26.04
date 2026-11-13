@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Restaurar painel e tela
+Comment=Devolve o padrão SEDUC do painel, menu, área de trabalho, aparência e monitores
+Icon=preferences-desktop
+Terminal=false
+X-SEDUC-Acesso=todos
+X-SEDUC-Bash=painel

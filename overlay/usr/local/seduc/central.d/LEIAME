@@ -2,6 +2,18 @@ Itens da Central do Suporte SEDUC (central_suporte.sh).
 Um .desktop por item; a ordem é a do nome do arquivo (10-, 20-...).
 X-SEDUC-Acesso=admin  só para administradores (grupo sudo e grupos do AD
                       em /usr/local/seduc/ad/ad.conf, GRUPOS_ADMIN)
+X-SEDUC-Acesso=ad     para administradores e usuários do Active Directory (UID
+                      do winbind, 1000000 a 19999999); usuários locais comuns não veem
 X-SEDUC-Acesso=todos  para qualquer usuário
 TryExec=caminho       o item só aparece se o programa existir (máquinas
                       instaladas por ISOs antigas podem não ter todos)
+
+Central do Suporte em web (programa central-suporte):
+X-SEDUC-Web=<página>  página feita em Go dentro da Central (boas-vindas, tokens...)
+X-SEDUC-Bash=<nome>   página feita em bash: paginas/<nome>.sh imprime o HTML.
+                      A Central roda "<nome>.sh pagina" ao abrir e "<nome>.sh <ação>"
+                      nos botões; os campos chegam em F_<campo>. Funções prontas
+                      (esc, linha, botao, formulario_tarefa...) em
+                      /usr/local/seduc/scripts/central_pagina.sh. Exemplo: paginas/rede.sh.
+                      O script e a pasta paginas/ têm de ser do root, sem escrita
+                      para grupo e outros. Sem Exec, o item não aparece no yad.

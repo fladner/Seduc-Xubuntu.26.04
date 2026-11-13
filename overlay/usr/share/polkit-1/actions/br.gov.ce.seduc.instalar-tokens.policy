@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<!-- Instalador de Tokens (Central do Suporte e painel_tokens.sh): pede a senha do
+     administrador, menos para os usuários do Active Directory na sessão ativa
+     (regra em /usr/share/polkit-1/rules.d/60-seduc-ad.rules) -->
+<policyconfig>
+  <vendor>SEDUC Ceará</vendor>
+  <action id="br.gov.ce.seduc.instalar-tokens">
+    <description>Instalar driver de token e assinadores digitais</description>
+    <message>Instalar o driver do token e os assinadores digitais</message>
+    <icon_name>dialog-password</icon_name>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/local/seduc/scripts/instalar_tokens.sh</annotate>
+  </action>
+</policyconfig>

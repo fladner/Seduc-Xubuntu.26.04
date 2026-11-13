@@ -3,7 +3,7 @@
 # Sem "set -e": em script de interface um erro não pode fechar a janela sem aviso.
 set -uo pipefail
 
-SCRIPT_VERSION="1.5-0"
+SCRIPT_VERSION="1.6-1"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -26,9 +26,31 @@ USUARIOS=(
     "gremio|Grêmio|Apoio"
 )
 
+AMBIENTES="/usr/local/seduc/ambientes.conf"
+IDENTIFICACAO="/usr/local/seduc/identificacao.conf"
+API_INEP="https://api.simet.nic.br/educacao-conectada/inep-service/school-by-inep"
+
+# --inep <código>: nome da escola pela API do Medidor Educação Conectada (NIC.br), como
+# na primeira versão do welcome. Uma linha: ESCOLA|<nome> | NAOENCONTRADA | INVALIDO | SEMREDE
+if [ "${1:-}" = "--inep" ]; then
+    INEP=$(printf '%s' "${2:-}" | tr -cd '0-9')
+    [ ${#INEP} -eq 8 ] || { echo "INVALIDO"; exit 0; }
+    if ! DADOS=$(curl -sSf -L -m 20 --retry 2 --retry-max-time 40 \
+        -d "INEP_CODE=$INEP" "$API_INEP" 2>/dev/null); then
+        echo "SEMREDE"; exit 0
+    fi
+    NOME=$(printf '%s' "$DADOS" | tr -d '\r|' | head -1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | cut -c1-150)
+    case "${NOME,,}" in
+        ""|unknown|null) echo "NAOENCONTRADA" ;;
+        *) echo "ESCOLA|$NOME" ;;
+    esac
+    exit 0
+fi
+
 # --listar: para a Central do Suporte em web (antes do log, que toma a saída padrão).
 # Uma linha por informação, separada por "|":
 #   LIVE | ERRO|<texto> | SISTEMA|<nome> | USUARIO|<login>|<nome>|<grupo>|<1 se já existe>
+#   AMBIENTE|<escola|crede>|<sigla>|<nome> | IDENT|<tipo>|<INEP>|<CREDE>|<ambiente>|<escola>|<computador>
 if [ "${1:-}" = "--listar" ]; then
     grep -q "casper" /proc/cmdline && echo "LIVE"
     if ! id -nG | tr ' ' '\n' | grep -qx sudo; then
@@ -41,6 +63,11 @@ if [ "${1:-}" = "--listar" ]; then
         id -u "$LOGIN" >/dev/null 2>&1 && EXISTE=1 || EXISTE=0
         echo "USUARIO|$LOGIN|$NOME|$GRUPO|$EXISTE"
     done
+    [ -r "$AMBIENTES" ] && grep -v '^[[:space:]]*#' "$AMBIENTES" | grep '|' | sed 's/^/AMBIENTE|/'
+    if [ -r "$IDENTIFICACAO" ]; then
+        ( . "$IDENTIFICACAO" 2>/dev/null
+          echo "IDENT|${TIPO:-}|${INEP:-}|${CREDE:-}|${AMBIENTE:-}|${ESCOLA:-}|${COMPUTADOR:-}" )
+    fi
     exit 0
 fi
 
@@ -199,7 +226,9 @@ if (( CENTRAL )) && ! id -nG | tr ' ' '\n' | grep -qx sudo; then
     exit 0
 fi
 check_admin
-# Com a Central do Suporte em web instalada, o primeiro login abre a página dela
+# Com a Central do Suporte em web instalada, o primeiro login abre direto a página
+# Boas-vindas dela (com a identificação do computador), não a tela inicial da Central;
+# como o welcome em yad, volta a cada login do administrador até criar os usuários.
 if (( ! CENTRAL )) && command -v central-suporte >/dev/null 2>&1; then
     echo "Abrindo a Central do Suporte em web (boas-vindas)"
     exec central-suporte --abrir boas-vindas

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Restaurar navegadores
+Comment=Volta o Firefox e o Google Chrome à configuração inicial, mantendo favoritos e senhas
+Icon=web-browser
+Terminal=false
+X-SEDUC-Acesso=todos
+X-SEDUC-Bash=navegadores

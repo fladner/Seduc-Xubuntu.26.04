@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Ferramentas de rede
+Comment=Teste da conexão, endereço, roteador, DNS e nome do computador
+Icon=network-wired
+Terminal=false
+X-SEDUC-Acesso=todos
+X-SEDUC-Bash=rede

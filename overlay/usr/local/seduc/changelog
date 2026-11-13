@@ -1,3 +1,98 @@
+## 1.6-2 - 13/11/2026
+    - Restaurar navegadores e Restaurar painel e tela pedem a senha do
+      administrador a cada vez: a correção do perfil fica com o técnico da
+      CREDE (ação do polkit br.gov.ce.seduc.confirmar-tecnico e
+      confirmar_tecnico.sh, que registra quem autorizou em
+      logs/confirmar_tecnico.log)
+    - Impressoras SEDUC na Central só para o administrador e os usuários do
+      AD; os usuários locais comuns não veem mais o item (novo
+      X-SEDUC-Acesso=ad; seduc-central-suporte 1.2.3 e central_suporte.sh)
+    - "Sobre a Linux SEDUC" sai do menu SEDUC (Whisker): fica só na Central
+      do Suporte
+
+## 1.6-1 - 13/11/2026
+    - Restaurar navegadores na Central do Suporte (página em bash): Firefox e
+      Google Chrome do usuário voltam à configuração inicial, como o
+      "Restaurar o Firefox". Por padrão mantém favoritos, histórico, senhas,
+      cookies e preenchimento automático e apaga extensões, configurações e
+      cache; também pode começar do zero. Fecha o navegador se pedido e
+      guarda o perfil antigo inteiro em ~/.local/share/seduc-backup-navegadores
+      (as 3 últimas restaurações) (central.d/paginas/navegadores.sh)
+    - Restaurar painel e tela na Central do Suporte (página em bash): devolve
+      o padrão SEDUC do painel e menu, da área de trabalho, da aparência
+      (tema, ícones, fontes, janelas e atalhos) e dos monitores, na hora, sem
+      sair da sessão. Vale também para os usuários do AD, que o
+      trava_perfil.sh não restaura no boot. Guarda a configuração anterior em
+      ~/.local/share/seduc-backup-painel (central.d/paginas/painel.sh)
+    - Primeiro login do administrador volta a abrir o welcome (a página
+      Boas-vindas da Central, com a identificação do computador) até os
+      usuários serem criados, e não mais a tela inicial da Central
+    - Páginas em bash: grupos de campos com quadro e título (grupo/fim_grupo)
+      e opção de escolha única (escolha) no central_pagina.sh
+    - Diagnóstico da rede vira Ferramentas de rede e melhora: mostra cabo e
+      Wi-Fi (estado, velocidade, rede e sinal), endereço, MAC, roteador, DNS
+      e domínio; o teste confere placa, endereço (DHCP), roteador, cada
+      servidor DNS, internet, sites (SEDUC, gov.br, Google) e o domínio SEDUC,
+      diz o provável problema e o que fazer, mede a velocidade de download se
+      pedido e salva um relatório na Área de Trabalho para o suporte; novos
+      consertos rápidos: Renovar a conexão e Limpar o cache de DNS
+    - Sobre o Xubuntu SEDUC mostra o histórico completo de versões (todo o
+      changelog, a versão atual aberta) (seduc-central-suporte 1.2.1)
+    - Ferramentas de rede: o administrador troca o nome do computador (confere
+      se outra máquina da rede já usa o nome; no domínio AD, pede para sair
+      do domínio antes) (renomear_computador.sh, com a senha pelo pkexec)
+    - Boas-vindas: escola sem INEP cria os usuários e mantém o nome atual do
+      computador (criar_usuarios.sh --manter-nome; seduc-central-suporte 1.2.2)
+
+## 1.6-0 - 13/11/2026
+    - Central do Suporte numa janela nativa (WebKitGTK), sem o Chrome no
+      caminho, como o BigBashView do BigLinux: mesmo servidor só em 127.0.0.1
+      e entrada de uso único, agora passada pela entrada padrão (não aparece
+      no "ps"); a janela só mostra as páginas locais e abre e-mail e sites no
+      programa padrão; fechar a janela encerra a Central em segundos. Sem o
+      WebKitGTK, continua no Chrome (seduc-central-suporte 1.1.0, que
+      depende de gir1.2-webkit2-4.1)
+    - Páginas em bash na Central do Suporte, como no BigBashView: um script em
+      central.d/paginas/<nome>.sh imprime o HTML da página, recebe os campos
+      dos formulários em F_<campo> e roda tarefas com barra e saída ao vivo,
+      sem recompilar a Central (item com X-SEDUC-Bash=<nome>; funções prontas
+      em scripts/central_pagina.sh; só scripts do root, sem escrita para
+      outros). Primeira página: Diagnóstico da rede (endereço, roteador, DNS
+      e teste do roteador, DNS, internet e site da SEDUC)
+      (seduc-central-suporte 1.2.0)
+
+## 1.5-2 - 12/11/2026
+    - Ícones da Central do Suporte carregam na hora: a busca no tema Papirus
+      levava meio segundo por ícone e agora é feita uma vez, ao abrir a janela
+      (seduc-central-suporte 1.0.2)
+    - Primeiro login do administrador depois da instalação abre a Central do
+      Suporte na tela inicial, uma única vez, no lugar das boas-vindas (marca em
+      flags/central-primeiro-login); sem o programa da Central, continua o
+      welcome em yad
+    - Nome do computador pela escola e ambiente: nas Boas-vindas da Central, o
+      técnico escolhe Escola (INEP, com o nome da escola consultado na API do
+      Medidor Educação Conectada, como na primeira versão do welcome), CREDE ou
+      SEDUC, e o ambiente (Laboratório de Matemática, de Línguas, LEI, Direção,
+      Secretaria...). O nome fica INEP-AMBIENTE-<4 últimos do serial> ou
+      CR<nn>-SETOR-<serial>; se outra máquina da rede já usa o nome (DNS,
+      NetBIOS ou mDNS), usa mais dígitos do serial. Identificação gravada em
+      /usr/local/seduc/identificacao.conf e mostrada no Sobre
+      (seduc-central-suporte 1.0.3, identificar_computador.sh, ambientes.conf)
+    - Sobre o Xubuntu SEDUC na Central do Suporte em web, no mesmo padrão das
+      outras páginas: a quem pertence o computador, versão, instalação,
+      compilação e as novidades da versão (about_system.sh --listar). O Sobre
+      do menu SEDUC também abre essa página; a janela em yad fica para as
+      máquinas sem a Central
+    - Usuários do Active Directory instalam o driver do token e os assinadores
+      pelo Instalador de Tokens sem a senha do administrador (ação do polkit
+      br.gov.ce.seduc.instalar-tokens e regra 60-seduc-ad.rules); os usuários
+      locais continuam com a senha. Texto da página ajustado
+      (seduc-central-suporte 1.0.5)
+    - Usuários do Active Directory montam pendrive, HD externo, cartão de
+      memória e CD/DVD ligados na USB, inclusive o HD em gaveta USB que o
+      udisks trata como disco interno e pedia a senha do administrador (mesma
+      regra do polkit: montar, desbloquear, ejetar e desligar)
+
 ## 1.5-1 - 12/11/2026
     - Central do Suporte e Boas-vindas na web abrem numa janela de 1000x720 no
       centro do monitor principal (antes grande e no canto esquerdo, com vários
