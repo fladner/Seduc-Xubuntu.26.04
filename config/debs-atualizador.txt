@@ -1,0 +1,8 @@
+# .deb criados para a ISO que o seduc_setup.sh instala nas máquinas já instaladas.
+# Um nome de pacote por linha; o tools/publicar-seduc-setup.sh pega o .deb mais
+# novo dele em debs/, publica em scripts/debs/ e anota versão e sha256 no pacote
+# assinado seduc-sistema.tar.gz. A máquina instala quando a versão dela é menor.
+#
+# Só pacotes nossos: os de terceiros (RustDesk, Web PKI, Epson) vêm pelos canais
+# oficiais. O seduc-ad-sige é interno e NUNCA entra aqui (o publicador recusa).
+seduc-central-suporte

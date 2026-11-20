@@ -3,12 +3,14 @@
 set -euo pipefail
 
 ## VARIABLES
-SCRIPT_VERSION="1.6-2"
+SCRIPT_VERSION="1.6-3"
 SEDUC_DIR="/usr/local/seduc"
 LOG_FILE="$SEDUC_DIR/logs/seduc_setup.log"
 SCRIPT_PATH="$(readlink -f "$0")"
 # Atualizador: repositório no GitHub e chave pública que assina as versões
 UPDATE_CONF="$SEDUC_DIR/update.conf"
+# Ajuste só desta máquina (ex.: REPO_RAW de um ramo de teste); não vem nos pacotes
+UPDATE_LOCAL="$SEDUC_DIR/update.local.conf"
 UPDATE_KEYRING="$SEDUC_DIR/keys/seduc-updates.gpg"
 
 ## FLAGS
@@ -70,6 +72,16 @@ check_apt() {
     log "APT verificado com sucesso"
 }
 
+## CONFIGURAÇÃO DO ATUALIZADOR
+# update.conf (vem nos pacotes) e, por cima, update.local.conf (da máquina)
+carregar_conf() {
+    # shellcheck source=/dev/null
+    [ -r "$UPDATE_CONF" ] && . "$UPDATE_CONF"
+    # shellcheck source=/dev/null
+    [ -r "$UPDATE_LOCAL" ] && . "$UPDATE_LOCAL"
+    return 0
+}
+
 ## AUTO UPDATE
 # Baixa scripts/seduc_setup.sh e scripts/seduc_setup.sh.asc do GitHub.
 # Só substitui o script se a assinatura conferir com a chave da ISO
@@ -80,8 +92,7 @@ check_update() {
 
     local REPO_RAW="" TMP_DIR REMOTE_VERSION
 
-    # shellcheck source=/dev/null
-    [ -r "$UPDATE_CONF" ] && . "$UPDATE_CONF"
+    carregar_conf
 
     if [ -z "$REPO_RAW" ]; then
         log "Atualizador sem repositório configurado ($UPDATE_CONF)"
@@ -314,21 +325,48 @@ instalar_base_xubuntu() {
     log "Concluído!"
 }
 
-## ARQUIVOS DO OVERLAY
-# Baixa scripts/seduc-arquivos.tar.gz e a assinatura .asc do GitHub (gerados pelo
-# tools/publicar-seduc-setup.sh a partir de config/arquivos-atualizador.txt) e
-# extrai em /. Aplica sempre que o pacote muda (sha256), não uma vez só.
-# Só aceita arquivos e pastas comuns dentro destes destinos:
-ARQUIVOS_PERMITIDOS='^(usr/local/seduc/|usr/local/share/applications/|etc/xdg/menus/applications-merged/)'
-ARQUIVOS_PASTAS='^(usr|usr/local|usr/local/share|etc|etc/xdg|etc/xdg/menus)/$'
+## SISTEMA SEDUC (OVERLAY DA ISO)
+# Baixa scripts/seduc-sistema.tar.gz e a assinatura .asc (gerados pelo
+# tools/publicar-seduc-setup.sh): o overlay inteiro da ISO, com a versão, e as listas
+# do atualizador em usr/local/seduc/atualizador/. Extrai em / sempre que o pacote
+# muda (sha256), não uma vez só.
+# Mesmo assinado, só entram arquivos e pastas comuns dentro destes destinos:
+ARQUIVOS_PERMITIDOS='^(etc/|usr/local/|usr/share/polkit-1/)'
+ARQUIVOS_PASTAS='^(usr|usr/share|etc)/$'
+ATUALIZADOR_DIR="$SEDUC_DIR/atualizador"
+
+# Unidades seduc-* do overlay ligadas como na ISO; certificados e permissões
+pos_arquivos() {
+    local LISTA="$1" U ARQ
+    systemctl daemon-reload || true
+    while read -r U; do
+        U=$(basename "$U")
+        systemctl is-enabled --quiet "$U" 2>/dev/null && continue
+        systemctl enable "$U" && log "Serviço habilitado: $U"
+    done < <(grep -E '^etc/systemd/system/seduc-[^/]+\.service$' <<< "$LISTA" || true)
+
+    grep -q '^usr/local/share/ca-certificates/.' <<< "$LISTA" && { update-ca-certificates || true; }
+
+    # Logs e flags graváveis pelo administrador (grupo adm), como no build.sh
+    chown root:adm "$SEDUC_DIR/logs" "$SEDUC_DIR/flags" 2>/dev/null || true
+    chmod 2775 "$SEDUC_DIR/logs" "$SEDUC_DIR/flags" 2>/dev/null || true
+
+    # Arquivos que a ISO apaga (config/arquivos-remover.txt)
+    if [ -r "$ATUALIZADOR_DIR/arquivos-remover.txt" ]; then
+        while read -r ARQ; do
+            [[ "$ARQ" == /* && "$ARQ" != *..* ]] || continue
+            [ -e "$ARQ" ] || continue
+            rm -f "$ARQ" && log "Removido: $ARQ"
+        done < "$ATUALIZADOR_DIR/arquivos-remover.txt"
+    fi
+}
 
 instalar_arquivos() {
 
     local REPO_RAW="" TMP_DIR PACOTE HASH OLD_HASH="" LISTA INVALIDOS PACOTE_VERSAO SISTEMA_VERSAO
-    local HASH_FILE="$FLAG_DIR/seduc-arquivos.sha256"
+    local HASH_FILE="$FLAG_DIR/seduc-sistema.sha256"
 
-    # shellcheck source=/dev/null
-    [ -r "$UPDATE_CONF" ] && . "$UPDATE_CONF"
+    carregar_conf
     if [ -z "$REPO_RAW" ]; then
         log "Arquivos: atualizador sem repositório configurado"
         return 0
@@ -338,20 +376,20 @@ instalar_arquivos() {
         return 1
     fi
 
-    log "Verificando arquivos do sistema SEDUC..."
+    log "Verificando o sistema SEDUC..."
     TMP_DIR=$(mktemp -d)
-    PACOTE="$TMP_DIR/seduc-arquivos.tar.gz"
+    PACOTE="$TMP_DIR/seduc-sistema.tar.gz"
 
-    if ! curl -fsSL --retry 3 -m 120 "$REPO_RAW/scripts/seduc-arquivos.tar.gz" -o "$PACOTE" ||
-       ! curl -fsSL --retry 3 -m 60 "$REPO_RAW/scripts/seduc-arquivos.tar.gz.asc" -o "$PACOTE.asc"; then
+    if ! curl -fsSL --retry 3 -m 300 "$REPO_RAW/scripts/seduc-sistema.tar.gz" -o "$PACOTE" ||
+       ! curl -fsSL --retry 3 -m 60 "$REPO_RAW/scripts/seduc-sistema.tar.gz.asc" -o "$PACOTE.asc"; then
         rm -rf "$TMP_DIR"
-        log_error "Erro ao baixar o pacote de arquivos"
+        log_error "Erro ao baixar o pacote do sistema"
         return 1
     fi
 
     if ! gpgv --keyring "$UPDATE_KEYRING" "$PACOTE.asc" "$PACOTE"; then
         rm -rf "$TMP_DIR"
-        log_error "Assinatura inválida: pacote de arquivos recusado"
+        log_error "Assinatura inválida: pacote do sistema recusado"
         return 1
     fi
 
@@ -359,23 +397,24 @@ instalar_arquivos() {
     [ -f "$HASH_FILE" ] && OLD_HASH=$(cat "$HASH_FILE")
     if [ "$HASH" = "$OLD_HASH" ]; then
         rm -rf "$TMP_DIR"
-        log "Arquivos já aplicados (${HASH:0:16})"
+        log "Sistema já aplicado (${HASH:0:16})"
         return 0
     fi
 
-    # Mesmo assinado, só entra o esperado: nada de links, "..", nem outros destinos
+    # Nada de links, "..", nem outros destinos
     if ! LISTA=$(tar -tzf "$PACOTE"); then
         rm -rf "$TMP_DIR"
-        log_error "Pacote de arquivos corrompido"
+        log_error "Pacote do sistema corrompido"
         return 1
     fi
     INVALIDOS=$(grep -vE "$ARQUIVOS_PERMITIDOS" <<< "$LISTA" | grep -vE "$ARQUIVOS_PASTAS" || true)
     INVALIDOS+=$'\n'$(grep -E '(^/|(^|/)\.\.(/|$))' <<< "$LISTA" || true)
+    INVALIDOS+=$'\n'$(grep -E '^usr/local/seduc/(scripts/seduc_setup\.sh|update\.local\.conf|keys/.*|logs/.*|flags/.*)$' <<< "$LISTA" || true)
     INVALIDOS+=$'\n'$(tar -tvzf "$PACOTE" | grep -v '^[-d]' | awk '{print $6}' || true)
     INVALIDOS=$(sed '/^$/d' <<< "$INVALIDOS")
     if [ -n "$INVALIDOS" ]; then
         rm -rf "$TMP_DIR"
-        log_error "Pacote de arquivos recusado, caminhos não permitidos: $(tr '\n' ' ' <<< "$INVALIDOS")"
+        log_error "Pacote do sistema recusado, caminhos não permitidos: $(tr '\n' ' ' <<< "$INVALIDOS")"
         return 1
     fi
 
@@ -384,7 +423,7 @@ instalar_arquivos() {
     SISTEMA_VERSAO=$(cat "$SEDUC_DIR/version" 2>/dev/null || true)
     if [ -z "$PACOTE_VERSAO" ]; then
         rm -rf "$TMP_DIR"
-        log_error "Pacote de arquivos sem versão: recusado"
+        log_error "Pacote do sistema sem versão: recusado"
         return 1
     fi
     if [ -n "$SISTEMA_VERSAO" ] && [ "$SISTEMA_VERSAO" != "$PACOTE_VERSAO" ] &&
@@ -392,20 +431,153 @@ instalar_arquivos() {
         mkdir -p "$FLAG_DIR"
         echo "$HASH" > "$HASH_FILE"
         rm -rf "$TMP_DIR"
-        log "Arquivos $PACOTE_VERSAO não aplicados: o sistema $SISTEMA_VERSAO é mais novo"
+        log "Sistema $PACOTE_VERSAO não aplicado: o sistema $SISTEMA_VERSAO é mais novo"
         return 0
     fi
 
     if ! tar -xzf "$PACOTE" -C / --no-same-owner --no-overwrite-dir --keep-directory-symlink; then
         rm -rf "$TMP_DIR"
-        log_error "Falha ao extrair o pacote de arquivos"
+        log_error "Falha ao extrair o pacote do sistema"
         return 1
     fi
 
+    pos_arquivos "$LISTA"
     mkdir -p "$FLAG_DIR"
     echo "$HASH" > "$HASH_FILE"
     rm -rf "$TMP_DIR"
-    log "Arquivos aplicados: $(grep -vc '/$' <<< "$LISTA") (${HASH:0:16})"
+    log "Sistema $PACOTE_VERSAO aplicado: $(grep -vc '/$' <<< "$LISTA") arquivos (${HASH:0:16})"
+}
+
+## .DEB CRIADOS PARA A ISO
+# atualizador/debs.txt (do pacote assinado): "pacote versão arquivo sha256".
+# Baixa $REPO_RAW/scripts/debs/<arquivo>, confere o sha256 e instala quando a
+# versão instalada é menor ou o pacote falta. Roda a cada boot; sem rede, tenta no próximo.
+instalar_debs() {
+
+    local REPO_RAW="" LISTA="$ATUALIZADOR_DIR/debs.txt" PKG VER ARQ SHA ATUAL TMP_DIR FALHA=0
+
+    [ -r "$LISTA" ] || return 0
+    carregar_conf
+    [ -n "$REPO_RAW" ] || return 0
+
+    while read -r PKG VER ARQ SHA; do
+        [ -n "$SHA" ] || continue
+        [[ "$ARQ" =~ ^[A-Za-z0-9._+~-]+\.deb$ ]] || { log_error ".deb com nome inválido: $ARQ"; FALHA=1; continue; }
+        ATUAL=$(dpkg-query -W -f='${db:Status-Abbrev} ${Version}' "$PKG" 2>/dev/null || true)
+        if [[ "$ATUAL" == ii* ]] && dpkg --compare-versions "${ATUAL##* }" ge "$VER"; then
+            log "$PKG ${ATUAL##* } já instalado"
+            continue
+        fi
+
+        log "Instalando $PKG $VER..."
+        check_apt || return 1
+        TMP_DIR=$(mktemp -d)
+        chmod 755 "$TMP_DIR"
+        if ! curl -fsSL --retry 3 -m 600 "$REPO_RAW/scripts/debs/$ARQ" -o "$TMP_DIR/$ARQ"; then
+            log_error "Erro ao baixar $ARQ"
+            rm -rf "$TMP_DIR"; FALHA=1; continue
+        fi
+        if [ "$(sha256sum "$TMP_DIR/$ARQ" | cut -d' ' -f1)" != "$SHA" ]; then
+            log_error "sha256 diferente: $ARQ recusado"
+            rm -rf "$TMP_DIR"; FALHA=1; continue
+        fi
+        chmod 644 "$TMP_DIR/$ARQ"
+        apt-get update || log_error "Falha no apt-get update (continuando)"
+        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+               -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold "$TMP_DIR/$ARQ"; then
+            log "$PKG $VER instalado"
+        else
+            log_error "Falha ao instalar $PKG $VER"
+            FALHA=1
+        fi
+        rm -rf "$TMP_DIR"
+    done < "$LISTA"
+
+    return "$FALHA"
+}
+
+## PACOTES DA ISO
+# atualizador/pacotes-instalar.txt e pacotes-remover.txt: as mesmas listas do
+# build.sh. Instala só o que falta e remove só o que está instalado.
+pacote_instalado() { dpkg-query -W -f='${db:Status-Abbrev}' "$1" 2>/dev/null | grep -q '^ii'; }
+
+# Com o AD (winbind) instalado agora numa máquina fora do domínio: desliga como o
+# build.sh, o login do domínio só liga no ingresso (painel_ad.sh)
+desligar_ad_fora_do_dominio() {
+    if systemctl is-active --quiet winbind && wbinfo --own-domain >/dev/null 2>&1; then
+        return 0
+    fi
+    log "AD instalado fora do domínio: winbind e login do domínio desligados"
+    systemctl disable --now winbind.service 2>/dev/null || true
+    DEBIAN_FRONTEND=noninteractive pam-auth-update --remove winbind libpam-mount || true
+    sed -i -E '/^(passwd|group):/ s/[[:space:]]+winbind//g' /etc/nsswitch.conf
+}
+
+instalar_pacotes_iso() {
+
+    local P FALTAM=() NOVOS_AD=0 ANTES A DESTINO FALHA=0
+
+    [ -r "$ATUALIZADOR_DIR/pacotes-instalar.txt" ] || return 0
+
+    local R=()
+    while read -r P; do
+        [ -n "$P" ] && pacote_instalado "$P" && R+=("$P")
+    done < <(cat "$ATUALIZADOR_DIR/pacotes-remover.txt" 2>/dev/null || true)
+
+    while read -r P; do
+        [ -n "$P" ] || continue
+        pacote_instalado "$P" && continue
+        FALTAM+=("$P")
+        [[ "$P" =~ ^(winbind|libpam-winbind|libnss-winbind|libpam-mount)$ ]] && NOVOS_AD=1
+    done < "$ATUALIZADOR_DIR/pacotes-instalar.txt"
+
+    if [ ${#FALTAM[@]} -eq 0 ] && [ ${#R[@]} -eq 0 ]; then
+        log "Pacotes da ISO já instalados"
+        return 0
+    fi
+
+    check_apt || return 1
+
+    if [ ${#R[@]} -gt 0 ]; then
+        log "Removendo: ${R[*]}"
+        DEBIAN_FRONTEND=noninteractive apt-get purge -y "${R[@]}" || { log_error "Falha na remoção"; FALHA=1; }
+    fi
+
+    [ ${#FALTAM[@]} -gt 0 ] || return "$FALHA"
+
+    if printf '%s\n' "${FALTAM[@]}" | grep -q ':i386$' && ! dpkg --print-foreign-architectures | grep -qx i386; then
+        dpkg --add-architecture i386
+    fi
+    ANTES=$(atalhos_visiveis)
+    apt-get update || log_error "Falha no apt-get update (continuando)"
+
+    log "Instalando os pacotes da ISO: ${FALTAM[*]}"
+    if ! DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${FALTAM[@]}"; then
+        # Um pacote indisponível não segura os outros
+        log_error "Falha na instalação em conjunto; tentando um por um"
+        for P in "${FALTAM[@]}"; do
+            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "$P" ||
+                { log_error "Falha ao instalar $P"; FALHA=1; }
+        done
+    fi
+
+    (( NOVOS_AD )) && desligar_ad_fora_do_dominio
+
+    # Como no build.sh: atalho novo de dependência fica oculto; os da lista aparecem
+    while read -r A; do
+        grep -qxF "$A" <<< "$ANTES" && continue
+        P=$(dpkg -S "/usr/share/applications/$A" 2>/dev/null | head -1 | cut -d: -f1 || true)
+        [ -n "$P" ] && sed 's/:.*//' "$ATUALIZADOR_DIR/pacotes-instalar.txt" | grep -qxF "$P" && continue
+        DESTINO="/usr/local/share/applications/$A"
+        [ -e "$DESTINO" ] && continue
+        install -d -m 755 /usr/local/share/applications
+        sed -e '/^NoDisplay=/d' -e '/^\[Desktop Entry\]/a NoDisplay=true' \
+            "/usr/share/applications/$A" > "$DESTINO"
+        chmod 644 "$DESTINO"
+        log "Atalho oculto: $A"
+    done < <(atalhos_visiveis)
+
+    return "$FALHA"
 }
 
 ## NTFS PELO NTFS-3G
@@ -522,8 +694,10 @@ main() {
     check_live
     
     check_update || log_error "Falha no update (continuando)"
-    # Arquivos novos do overlay (Central do Suporte...); sem rede tenta no próximo boot
+    # Tudo o que a ISO nova traz: overlay, .deb nossos e pacotes; sem rede tenta no próximo boot
     instalar_arquivos || log_error "Arquivos do sistema SEDUC pendentes (próximo boot)"
+    instalar_debs || log_error ".deb do sistema SEDUC pendentes (próximo boot)"
+    instalar_pacotes_iso || log_error "Pacotes da ISO pendentes (próximo boot)"
 
     check_model
     apply_patch_if_needed remover_snaps

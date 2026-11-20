@@ -1,3 +1,14 @@
+## 1.6-3 - 20/11/2026
+    - Atualização completa das máquinas já instaladas: o seduc_setup.sh aplica
+      o sistema SEDUC inteiro da ISO nova (pacote assinado seduc-sistema.tar.gz,
+      com /etc, as regras do polkit, os serviços seduc-* e os certificados),
+      instala os .deb criados para a ISO (seduc-central-suporte, com a Central
+      em web e as páginas novas) e os pacotes que faltam da lista da ISO
+    - Os .deb de terceiros (RustDesk, Web PKI, Epson) continuam pelos canais
+      oficiais; o seduc-ad-sige não é publicado
+    - /usr/local/seduc/update.local.conf: endereço de atualização só daquela
+      máquina (ex.: um ramo de teste), sem ser sobrescrito pelos pacotes
+
 ## 1.6-2 - 13/11/2026
     - Restaurar navegadores e Restaurar painel e tela pedem a senha do
       administrador a cada vez: a correção do perfil fica com o técnico da

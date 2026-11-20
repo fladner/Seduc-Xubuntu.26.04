@@ -28,9 +28,10 @@ tenha entrado depois; a mudança seguinte já abre a próxima versão.
   linha por mudança, no estilo das seções anteriores.
 - `SCRIPT_VERSION` de cada script de `overlay/usr/local/seduc/scripts/` alterado,
   igual à versão nova. Os scripts não alterados ficam com a versão que já têm.
-- `config/arquivos-atualizador.txt`: arquivo novo ou alterado do `overlay/` que as
-  máquinas já instaladas também precisam receber entra nessa lista (vai no pacote
-  `scripts/seduc-arquivos.tar.gz` gerado pelo `tools/publicar-seduc-setup.sh`).
+- O `tools/publicar-seduc-setup.sh` leva o `overlay/` inteiro, as listas de pacotes e
+  os `.deb` de `config/debs-atualizador.txt` às máquinas já instaladas: não há lista de
+  arquivos para manter. Um `.deb` novo criado para a ISO entra em
+  `config/debs-atualizador.txt` (nunca o `seduc-ad-sige` nem os de terceiros).
 - `seduc_setup.sh`: as máquinas instaladas só aceitam um `SCRIPT_VERSION` maior do que
   o publicado. Antes de publicar, ele recebe a versão em aberto ou a próxima.
 

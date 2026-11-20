@@ -15,10 +15,10 @@ O `build.sh` parte da ISO anterior, aplica as mudanças deste repositório e ger
 | `config/pacotes-base-xubuntu.txt` | Infraestrutura do Xubuntu completo, sem programas novos no menu |
 | `config/pacotes-remover.txt` | Pacotes removidos no build |
 | `config/arquivos-remover.txt` | Arquivos apagados da imagem |
-| `config/arquivos-atualizador.txt` | Arquivos do `overlay/` levados às máquinas já instaladas pelo `seduc_setup.sh` |
+| `config/debs-atualizador.txt` | `.deb` criados para a ISO que o `seduc_setup.sh` instala nas máquinas já instaladas |
 | `config/*.gpg` | Chaves públicas: repositório NetMonitor e atualizador do `seduc_setup.sh` |
 | `debs/` | `.deb` extras (Epson, RustDesk, Web PKI, Central do Suporte em web) e `debs/instaladores/` (tokens e assinadores do painel); não versionados, veja `debs/LEIAME.txt` |
-| `scripts/` | `seduc_setup.sh` publicado e assinado, baixado pelas máquinas instaladas |
+| `scripts/` | `seduc_setup.sh`, pacotes do sistema e `.deb` nossos, publicados e assinados para as máquinas instaladas |
 | `tools/` | Ferramentas de manutenção |
 | `overlay/usr/local/seduc/changelog` | O que mudou em cada versão |
 
@@ -40,11 +40,16 @@ A ISO sai em `out/`, com o `.sha256` ao lado. Por padrão a base é
 As máquinas instaladas baixam `scripts/seduc_setup.sh` deste repositório no boot e só
 aplicam se a assinatura GPG conferir com `config/seduc-updates.gpg` e a versão for maior.
 
-O mesmo comando gera `scripts/seduc-arquivos.tar.gz`, também assinado, com os arquivos de
-`config/arquivos-atualizador.txt`. A máquina aplica o pacote sempre que ele muda, menos
-quando o sistema dela é mais novo que o pacote (ISO compilada depois).
+O mesmo comando gera, também assinado, `scripts/seduc-sistema.tar.gz`: o `overlay/`
+inteiro, com a versão, as listas de pacotes de `config/` e o sha256 dos `.deb` de
+`config/debs-atualizador.txt` (copiados para `scripts/debs/`). A máquina aplica o pacote
+sempre que ele muda, menos quando o sistema dela é mais novo (ISO compilada depois),
+instala os `.deb` com versão maior e os pacotes da ISO que faltam. Assim a máquina
+instalada fica igual à ISO nova. Os `.deb` de terceiros vêm pelos canais oficiais.
+`scripts/seduc-arquivos.tar.gz` é a parte do overlay que os `seduc_setup.sh` até 1.6-2
+aceitam, para eles já receberem os scripts antes de se atualizarem.
 
 ```bash
 tools/publicar-seduc-setup.sh <ID-da-chave> .
-git add scripts/ && git commit -m "seduc_setup.sh X.Y-Z" && git push
+git add -A scripts/ && git commit -m "seduc_setup.sh X.Y-Z" && git push
 ```
