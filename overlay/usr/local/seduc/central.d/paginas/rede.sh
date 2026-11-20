@@ -14,6 +14,7 @@
 
 set -uo pipefail
 . "${CENTRAL_SCRIPTS:-/usr/local/seduc/scripts}/central_pagina.sh"
+. "${CENTRAL_SCRIPTS:-/usr/local/seduc/scripts}/dominio_ad.sh"
 
 AD_CONF="/usr/local/seduc/ad/ad.conf"
 SITES=("www.seduc.ce.gov.br|Site da SEDUC" "www.gov.br|gov.br" "www.google.com|Google")
@@ -47,10 +48,8 @@ dominio_ad() {
     echo "$DOMINIO"
 }
 
-ingressado() { wbinfo --own-domain >/dev/null 2>&1; }
-
-# No domínio pela configuração do Samba (mesmo com o winbind parado)
-no_dominio() { grep -qiE '^[[:space:]]*security[[:space:]]*=[[:space:]]*ads' /etc/samba/smb.conf 2>/dev/null; }
+# No domínio pela configuração do ingresso (dominio_ad.sh), mesmo com o winbind parado
+no_dominio() { computador_no_dominio; }
 
 estado_placa() {
     case "$1" in
@@ -92,7 +91,7 @@ pagina() {
     DNS=$(servidores_dns | tr '\n' ' ')
     linha "DNS" "${DNS:-nenhum}"
     DOM=$(dominio_ad)
-    if ingressado; then
+    if no_dominio; then
         linha "Domínio" "ingressado em ${DOM:-SEDUC}"
     else
         linha "Domínio" "não ingressado"
@@ -130,7 +129,7 @@ nome_computador() {
     if [ "${CENTRAL_ADMIN:-0}" != 1 ]; then
         p "Este computador se chama $(hostname). Só o administrador troca o nome."
     elif no_dominio; then
-        p "Este computador se chama $(hostname) e está no domínio SEDUC. Para trocar o nome, saia do domínio (Active Directory SEDUC), troque aqui e ingresse de novo."
+        p "Este computador se chama $(hostname) e está no domínio SEDUC: o nome não pode ser trocado, porque a conta do computador no AD ficaria com o nome antigo. Para trocar, saia do domínio (Active Directory SEDUC), troque aqui e ingresse de novo."
     else
         texto nome "Novo nome do computador" "$(hostname)"
         secundario "Letras sem acento, números e hífen. Padrão SEDUC: INEP-AMBIENTE-serial (ex.: 23012345-LMAT-1234) ou CR05-SETOR-serial. O sistema confere se outra máquina da rede já usa o nome e pede a senha do administrador."
@@ -249,7 +248,7 @@ testar() {
     done
 
     DOM=$(dominio_ad)
-    if [ -n "$DOM" ] && ingressado; then
+    if [ -n "$DOM" ] && no_dominio; then
         mensagem "Domínio SEDUC..."; progresso 78
         SRV=$(dig +short +time=2 +tries=1 "_ldap._tcp.$DOM" SRV 2>/dev/null | awk '{print $4}' | sed 's/\.$//' | head -1)
         if [ -z "$SRV" ]; then
@@ -349,6 +348,10 @@ nome_valido() {
 renomear() {
     local NOVO CODIGO
     NOVO=$(campo nome | tr -d '[:space:]')
+    if no_dominio; then
+        aviso_fim "O computador está no domínio SEDUC: o nome não pode ser trocado. Saia do domínio, troque o nome e ingresse de novo."
+        return 4
+    fi
     if ! nome_valido "$NOVO"; then
         aviso_fim "Nome inválido: use letras sem acento, números e hífen (sem hífen no começo ou no fim), até 63."
         return 1

@@ -8,7 +8,7 @@
 # Sem "set -e": em script de interface um erro não pode fechar a janela sem aviso.
 set -uo pipefail
 
-SCRIPT_VERSION="1.5-0"
+SCRIPT_VERSION="1.6-3"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -40,8 +40,19 @@ check_live() {
     fi
 }
 
+# Ingresso feito e não desfeito (dominio_ad.sh); o wbinfo sozinho responde o
+# workgroup mesmo fora do domínio
 no_dominio() {
-    systemctl is-active --quiet winbind && wbinfo --own-domain >/dev/null 2>&1
+    # shellcheck source=/dev/null
+    . /usr/local/seduc/scripts/dominio_ad.sh
+    computador_no_dominio
+}
+
+# Domínio do computador: o do winbind (se rodando) ou o do ad.conf
+dominio_atual() {
+    local D
+    D=$(wbinfo --own-domain 2>/dev/null) || D=""
+    echo "${D:-$DOMINIO}"
 }
 
 # Nome NetBIOS: até 15 caracteres, letras, números e hífen
@@ -53,7 +64,7 @@ formulario() {
     local BOTOES=(--button="Cancelar:1" --button="Ingressar:0")
     local TEXTO="<b>Ingressar este computador no domínio $DOMINIO</b>\nUse um usuário do AD com permissão para ingressar máquinas."
     if no_dominio; then
-        TEXTO="<b>Este computador já está no domínio $(wbinfo --own-domain 2>/dev/null).</b>\nPara refazer, ingresse de novo; para remover, use Sair do domínio."
+        TEXTO="<b>Este computador já está no domínio $(dominio_atual).</b>\nPara refazer, ingresse de novo; para remover, use Sair do domínio."
         BOTOES=(--button="Cancelar:1" --button="Sair do domínio:3" --button="Ingressar de novo:0")
     fi
 
@@ -115,7 +126,7 @@ mostrar_relatorio() {
 listar() {
     grep -q "casper" /proc/cmdline && echo "LIVE"
     echo "DOMINIO|$DOMINIO"
-    no_dominio && echo "NO_DOMINIO|$(wbinfo --own-domain 2>/dev/null)"
+    no_dominio && echo "NO_DOMINIO|$(dominio_atual)"
     echo "COMPUTADOR|$(nome_padrao)"
 }
 

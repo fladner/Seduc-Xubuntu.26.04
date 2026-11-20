@@ -504,7 +504,9 @@ pacote_instalado() { dpkg-query -W -f='${db:Status-Abbrev}' "$1" 2>/dev/null | g
 # Com o AD (winbind) instalado agora numa máquina fora do domínio: desliga como o
 # build.sh, o login do domínio só liga no ingresso (painel_ad.sh)
 desligar_ad_fora_do_dominio() {
-    if systemctl is-active --quiet winbind && wbinfo --own-domain >/dev/null 2>&1; then
+    # Mesmo critério do dominio_ad.sh: smb.conf "ads" e winbind no nsswitch
+    if grep -qiE '^[[:space:]]*security[[:space:]]*=[[:space:]]*ads[[:space:]]*([;#].*)?$' /etc/samba/smb.conf 2>/dev/null &&
+       grep -qE '^passwd:.*[[:space:]]winbind([[:space:]]|$)' /etc/nsswitch.conf 2>/dev/null; then
         return 0
     fi
     log "AD instalado fora do domínio: winbind e login do domínio desligados"

@@ -8,6 +8,12 @@
       oficiais; o seduc-ad-sige não é publicado
     - /usr/local/seduc/update.local.conf: endereço de atualização só daquela
       máquina (ex.: um ramo de teste), sem ser sobrescrito pelos pacotes
+    - Ferramentas de rede: o computador fora do domínio não aparece mais como
+      "ingressado" (o wbinfo responde o workgroup mesmo fora do domínio). No
+      domínio, a troca do nome do computador fica bloqueada; fora, liberada
+      para o administrador, também depois de sair do domínio. Um critério só
+      (dominio_ad.sh: smb.conf "ads" e winbind no nsswitch) para a Central,
+      o renomear_computador.sh, o Active Directory SEDUC e o seduc_setup.sh
 
 ## 1.6-2 - 13/11/2026
     - Restaurar navegadores e Restaurar painel e tela pedem a senha do

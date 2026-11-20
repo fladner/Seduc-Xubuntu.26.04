@@ -10,14 +10,13 @@
 
 set -euo pipefail
 
-SCRIPT_VERSION="1.6-1"
+SCRIPT_VERSION="1.6-3"
 
 #####################
 ## VARIABLE GLOBAL ##
 #####################
 SCRIPTS="/usr/local/seduc/scripts"
 LOG="/usr/local/seduc/logs/renomear_computador.log"
-SMB_CONF="/etc/samba/smb.conf"
 IDENTIFICACAO="/usr/local/seduc/identificacao.conf"
 
 ###############
@@ -29,8 +28,11 @@ nome_valido() {
     [[ "$1" =~ ^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$ ]]
 }
 
+# Mesmo critério da Central (dominio_ad.sh): ingresso feito e não desfeito
 no_dominio() {
-    grep -qiE '^[[:space:]]*security[[:space:]]*=[[:space:]]*ads' "$SMB_CONF" 2>/dev/null
+    # shellcheck source=/dev/null
+    . "$SCRIPTS/dominio_ad.sh"
+    computador_no_dominio
 }
 
 ##########
