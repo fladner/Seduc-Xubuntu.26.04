@@ -33,3 +33,8 @@ usr/local/seduc/scripts/criar_usuarios.sh
 usr/local/seduc/scripts/central_pagina.sh
 usr/local/seduc/scripts/renomear_computador.sh
 usr/local/seduc/scripts/confirmar_tecnico.sh
+
+# Versão e changelog do sistema (1.6-2): a máquina atualizada mostra a mesma
+# versão em todos os lugares (Sobre, Central, Coletar logs, Ferramentas de rede)
+usr/local/seduc/version
+usr/local/seduc/changelog

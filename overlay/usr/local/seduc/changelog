@@ -9,6 +9,9 @@
       X-SEDUC-Acesso=ad; seduc-central-suporte 1.2.3 e central_suporte.sh)
     - "Sobre a Linux SEDUC" sai do menu SEDUC (Whisker): fica só na Central
       do Suporte
+    - Máquinas atualizadas pelo seduc_setup.sh recebem também a versão e o
+      changelog do sistema: o Sobre, a Central do Suporte e os relatórios
+      mostram a versão das atualizações, não mais a da ISO instalada
 
 ## 1.6-1 - 13/11/2026
     - Restaurar navegadores na Central do Suporte (página em bash): Firefox e

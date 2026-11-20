@@ -63,6 +63,11 @@ gerar_pacote() {
 }
 
 bash -n "$ORIGEM"
+# A versão do sistema vai no pacote: tem que ser a mesma do seduc_setup.sh
+VERSAO_SETUP=$(awk -F'"' '/^SCRIPT_VERSION=/{print $2; exit}' "$ORIGEM")
+VERSAO_SISTEMA=$(cat "$OVERLAY/usr/local/seduc/version")
+[ "$VERSAO_SETUP" = "$VERSAO_SISTEMA" ] ||
+    { echo "seduc_setup.sh $VERSAO_SETUP e overlay/usr/local/seduc/version $VERSAO_SISTEMA diferentes" >&2; exit 1; }
 mkdir -p "$REPO/scripts"
 install -m 755 "$ORIGEM" "$REPO/scripts/seduc_setup.sh"
 assinar "$REPO/scripts/seduc_setup.sh"
