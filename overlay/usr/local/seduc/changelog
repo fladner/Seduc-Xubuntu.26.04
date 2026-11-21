@@ -1,3 +1,16 @@
+## 1.6-4 - 20/11/2026
+    - Assinador Logus com o token mToken CryptoID: com o driver do CryptoID
+      instalado, o lançador /opt/AssinadorLogus/AssinadorLogus.sh roda o
+      assinador com PKCS11_DRIVER=/opt/CryptoIDEAdmin/x64/lib/linux/x64/
+      libcryptoide_pkcs11.so; sem o CryptoID, fica o lançador original da
+      Logus (instalar_tokens.sh, em qualquer ordem de instalação; o
+      seduc_setup.sh corrige onde os dois já estavam instalados)
+    - Web PKI com o token CryptoID: a extensão não aceita configuração por
+      política, então o Instalador de Tokens da Central mostra o caminho do
+      driver com o botão Copiar e os passos (Crypto devices > Custom modules),
+      e o relatório da instalação do CryptoID repete as instruções
+      (seduc-central-suporte 1.2.4 e instalar_tokens.sh)
+
 ## 1.6-3 - 20/11/2026
     - Atualização completa das máquinas já instaladas: o seduc_setup.sh aplica
       o sistema SEDUC inteiro da ISO nova (pacote assinado seduc-sistema.tar.gz,

@@ -10,7 +10,7 @@
 
 set -uo pipefail
 
-SCRIPT_VERSION="1.5-0"
+SCRIPT_VERSION="1.6-4"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -174,6 +174,9 @@ instalar_token() {
             local LIB=/opt/CryptoIDEUser/x64/lib/linux/x64/libcryptoide_pkcs11.so
             [ -f "$LIB" ] && ln -sf "$LIB" /usr/lib/pkcs11/libcryptoide_pkcs11.so
             organizar_menu mToken_CryptoID_Certificate_Utility.desktop mToken_CryptoID_Manager.desktop
+            logus_cryptoid
+            # A Web PKI não aceita configuração por política: passo manual, por usuário
+            relatorio "Web PKI (CryptoID)" "em cada navegador: ícone da Web PKI > engrenagem > Crypto devices > Custom modules: cole $CRYPTOID_LIB e clique em +"
             ;;
         starsign)
             [ -f /usr/lib/libaetpkss.so ] && ln -sf /usr/lib/libaetpkss.so /usr/lib/pkcs11/libaetpkss.so
@@ -206,6 +209,15 @@ instalar_java8() {
     relatorio "Java 8" "instalado"
 }
 
+# Com o token mToken CryptoID instalado, o Assinador Logus usa o lançador SEDUC, que
+# passa o driver do token (PKCS11_DRIVER); sem ele, fica o lançador original da Logus
+CRYPTOID_LIB="/opt/CryptoIDEAdmin/x64/lib/linux/x64/libcryptoide_pkcs11.so"
+logus_cryptoid() {
+    [ -f /opt/AssinadorLogus/AssinadorLogus.sh ] && [ -f "$CRYPTOID_LIB" ] || return 0
+    install -m 755 /usr/local/seduc/tokens/AssinadorLogus.sh /opt/AssinadorLogus/AssinadorLogus.sh &&
+        relatorio "Assinador Logus" "com o driver do token CryptoID"
+}
+
 instalar_logus() {
     local DIR="/opt/AssinadorLogus"
     progresso 60 "Instalando o Assinador Logus..."
@@ -221,6 +233,7 @@ instalar_logus() {
     }
     obter logus_icone "$DIR/assinador.png" || true
     chmod +x "$DIR/AssinadorLogus.sh"
+    logus_cryptoid
     mkdir -p "$LOCAL_APPS"
     printf '%s\n' \
         '[Desktop Entry]' \
