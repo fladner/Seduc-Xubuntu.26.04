@@ -1,0 +1,19 @@
+[Unit]
+Description=Atualização dos pacotes do sistema (SEDUC)
+Documentation=file:/usr/local/seduc/scripts/atualizar_pacotes.sh
+Wants=network-online.target
+After=network-online.target seduc_setup.service
+ConditionKernelCommandLine=!boot=casper
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/seduc/scripts/atualizar_pacotes.sh --auto
+# Não pesa na aula: CPU e disco só quando sobrar
+Nice=10
+CPUWeight=20
+IOSchedulingClass=idle
+# No desligamento só o script recebe o SIGTERM: o download para e a instalação
+# (dpkg) termina antes de desligar
+KillMode=mixed
+TimeoutStartSec=3h
+TimeoutStopSec=30min

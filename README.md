@@ -22,6 +22,16 @@ O `build.sh` parte da ISO anterior, aplica as mudanças deste repositório e ger
 | `tools/` | Ferramentas de manutenção |
 | `overlay/usr/local/seduc/changelog` | O que mudou em cada versão |
 
+## Atualização automática dos pacotes
+
+Desde a 1.7-0 quem atualiza os programas é o `seduc-atualizar.timer`, com o
+`overlay/usr/local/seduc/scripts/atualizar_pacotes.sh`, no lugar do unattended-upgrades
+(o apt-daily fica desligado). Roda 10 minutos depois de ligar e a cada 3 horas enquanto
+faltar algo, com `full-upgrade` de todos os repositórios mantendo as configurações da
+SEDUC; um pacote que o proxy barra fica para a próxima vez sem cancelar os outros. O
+resultado fica em `/var/lib/seduc-atualizar/status` (mostrado em "Atualizar o sistema"
+na Central) e o log em `/usr/local/seduc/logs/atualizacao_automatica.log`.
+
 ## Gerar a ISO
 
 1. Coloque os `.deb` de `debs/LEIAME.txt` em `debs/`.

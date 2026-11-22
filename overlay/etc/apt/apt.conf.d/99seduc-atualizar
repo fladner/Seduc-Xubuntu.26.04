@@ -1,0 +1,6 @@
+// SEDUC: quem atualiza é o seduc-atualizar.timer (/usr/local/seduc/scripts/atualizar_pacotes.sh).
+// O unattended-upgrades e o apt-daily ficam desligados para não disputarem o apt.
+APT::Periodic::Update-Package-Lists "0";
+APT::Periodic::Download-Upgradeable-Packages "0";
+APT::Periodic::Unattended-Upgrade "0";
+APT::Periodic::AutocleanInterval "0";

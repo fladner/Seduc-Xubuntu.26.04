@@ -7,7 +7,7 @@
 # Sem "set -e": em script de interface um erro não pode fechar a janela sem aviso.
 set -uo pipefail
 
-SCRIPT_VERSION="1.5-0"
+SCRIPT_VERSION="1.7-0"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -54,7 +54,9 @@ coletar() {
     salvar espaco.txt df -h
     salvar usb.txt lsusb
     salvar servicos-com-falha.txt systemctl --failed --no-pager
-    salvar servicos-seduc.txt systemctl status --no-pager seduc_setup.service seduc-trava-perfil.service seduc-fix-netplan.service
+    salvar servicos-seduc.txt systemctl status --no-pager seduc_setup.service seduc-trava-perfil.service seduc-fix-netplan.service seduc-atualizar.service seduc-atualizar.timer
+    salvar atualizacao-status.txt cat /var/lib/seduc-atualizar/status
+    salvar atualizacoes-pendentes.txt apt list --upgradable
     salvar impressoras.txt lpstat -t
     salvar dominio.txt wbinfo --online-status
     salvar pacotes-seduc.txt dpkg -l 'seduc*' google-chrome-stable firefox rustdesk anydesk

@@ -312,6 +312,10 @@ instalar_pacotes() {
     # Certificados de usr/local/share/ca-certificates (proxy SEDUC) no console
     chroot "$ROOTFS" update-ca-certificates
 
+    # Atualização automática pelo seduc-atualizar.timer (overlay): o apt-daily e o
+    # unattended-upgrades ficam desligados para não disputarem o apt
+    chroot "$ROOTFS" systemctl disable apt-daily.timer apt-daily-upgrade.timer || true
+
     # Active Directory: winbind, login do domínio e pam_mount só ligam no ingresso
     # (painel_ad.sh); antes disso não podem atrasar o login dos usuários locais
     chroot "$ROOTFS" systemctl disable winbind.service || true

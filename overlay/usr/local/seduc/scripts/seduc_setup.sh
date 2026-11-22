@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ## VARIABLES
-SCRIPT_VERSION="1.6-4"
+SCRIPT_VERSION="1.7-0"
 SEDUC_DIR="/usr/local/seduc"
 LOG_FILE="$SEDUC_DIR/logs/seduc_setup.log"
 SCRIPT_PATH="$(readlink -f "$0")"
@@ -344,6 +344,12 @@ pos_arquivos() {
         systemctl is-enabled --quiet "$U" 2>/dev/null && continue
         systemctl enable "$U" && log "Serviço habilitado: $U"
     done < <(grep -E '^etc/systemd/system/seduc-[^/]+\.service$' <<< "$LISTA" || true)
+    # Timers (seduc-atualizar.timer): o serviço deles não tem [Install]
+    while read -r U; do
+        U=$(basename "$U")
+        systemctl is-enabled --quiet "$U" 2>/dev/null && continue
+        systemctl enable --now "$U" && log "Timer habilitado: $U"
+    done < <(grep -E '^etc/systemd/system/seduc-[^/]+\.timer$' <<< "$LISTA" || true)
 
     grep -q '^usr/local/share/ca-certificates/.' <<< "$LISTA" && { update-ca-certificates || true; }
 
@@ -621,6 +627,27 @@ corrigir_logus() {
     log "Assinador Logus com o driver do token CryptoID"
 }
 
+## ATUALIZAÇÃO AUTOMÁTICA
+# Desde a 1.7-0 quem atualiza os pacotes é o seduc-atualizar.timer
+# (atualizar_pacotes.sh); o apt-daily e o unattended-upgrades ficam desligados para
+# não disputarem o apt (o 99seduc-atualizar do overlay zera o APT::Periodic)
+desligar_unattended_upgrades() {
+
+    # O pacote 1.7-0 chega pelo seduc_setup.sh anterior, que não habilita timers
+    if [ ! -x "$SEDUC_DIR/scripts/atualizar_pacotes.sh" ] ||
+        [ ! -f /etc/systemd/system/seduc-atualizar.timer ]; then
+        log_error "seduc-atualizar.timer ausente: unattended-upgrades mantido"
+        return 1
+    fi
+    systemctl daemon-reload || true
+    if ! systemctl enable --now seduc-atualizar.timer; then
+        log_error "Falha ao habilitar o seduc-atualizar.timer: unattended-upgrades mantido"
+        return 1
+    fi
+    systemctl disable --now apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true
+    log "Atualização automática pelo seduc-atualizar.timer; apt-daily desligado"
+}
+
 ## GERENCIADOR DE USUÁRIOS
 # O perfil laboratório (aluno criado pelo Boas-vindas) removia o gnome-system-tools
 # ("Usuários e grupos") até a 1.4-1; devolve nas máquinas em que foi removido
@@ -728,6 +755,7 @@ main() {
     apply_patch_if_needed corrigir_ntfs
     apply_patch_if_needed corrigir_logus || log_error "Assinador Logus pendente (próximo boot)"
     apply_patch_if_needed instalar_usuarios_grupos || log_error "Usuários e grupos pendente (próximo boot)"
+    apply_patch_if_needed desligar_unattended_upgrades || log_error "Atualização automática pendente (próximo boot)"
 
     log "Script finalizado com sucesso."
 }

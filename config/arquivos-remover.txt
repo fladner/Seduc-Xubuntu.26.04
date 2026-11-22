@@ -2,3 +2,7 @@
 # Um caminho absoluto por linha; linhas com # são ignoradas.
 # Desde a base 1.3-1 está vazia: o PPA mozillateam e o atalho duplicado do Aruba
 # (onboard-laucher.desktop) já saíram da imagem.
+# 1.7-0: o seduc-atualizar.timer substitui o unattended-upgrades
+/etc/apt/apt.conf.d/52seduc-mozilla
+/etc/systemd/system/apt-daily.timer.d/seduc.conf
+/etc/systemd/system/apt-daily-upgrade.timer.d/seduc.conf

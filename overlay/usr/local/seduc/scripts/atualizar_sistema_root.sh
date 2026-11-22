@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
 # Parte root do "Atualizar o sistema" (atualizar_sistema.sh), chamada via pkexec.
-# Atualiza todos os pacotes e roda o seduc_setup.sh na hora, sem esperar o boot.
+# Atualiza todos os pacotes (atualizar_pacotes.sh, o mesmo da atualização automática)
+# e roda o seduc_setup.sh na hora, sem esperar o boot.
 # A saída vai para a janela e para o log; se a janela for fechada, continua.
 
 set -uo pipefail
 
-SCRIPT_VERSION="1.4-0"
+SCRIPT_VERSION="1.7-0"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -14,9 +15,7 @@ SCRIPT_VERSION="1.4-0"
 LOG="/usr/local/seduc/logs/atualizar_sistema.log"
 SETUP_LOG="/usr/local/seduc/logs/seduc_setup.log"
 VERSAO_SETUP() { awk -F'"' '/^SCRIPT_VERSION=/{print $2; exit}' /usr/local/seduc/scripts/seduc_setup.sh; }
-APT=(apt-get -y -o DPkg::Lock::Timeout=600
-     -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold)
-export DEBIAN_FRONTEND=noninteractive
+PACOTES="/usr/local/seduc/scripts/atualizar_pacotes.sh"
 
 #########
 ## LOG ##
@@ -69,17 +68,8 @@ fi
 echo "===== INÍCIO $(date '+%F %T') - versão $SCRIPT_VERSION ====="
 FALHAS=0
 
-etapa "Concluindo instalações interrompidas"
-dpkg --configure -a || FALHAS=$((FALHAS + 1))
-
-etapa "Buscando atualizações"
-"${APT[@]}" update || FALHAS=$((FALHAS + 1))
-
-etapa "Instalando atualizações"
-"${APT[@]}" full-upgrade || FALHAS=$((FALHAS + 1))
-
-etapa "Removendo pacotes que não são mais usados"
-"${APT[@]}" autoremove || FALHAS=$((FALHAS + 1))
+# Concluir instalações interrompidas, buscar, baixar e instalar (etapas "==> ")
+"$PACOTES" || FALHAS=$((FALHAS + 1))
 
 etapa "Atualizando o sistema SEDUC (seduc_setup.sh)"
 if esperar_setup_boot; then
