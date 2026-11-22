@@ -26,8 +26,8 @@ O `build.sh` parte da ISO anterior, aplica as mudanças deste repositório e ger
 
 Desde a 1.7-0 quem atualiza os programas é o `seduc-atualizar.timer`, com o
 `overlay/usr/local/seduc/scripts/atualizar_pacotes.sh`, no lugar do unattended-upgrades
-(o apt-daily fica desligado). Roda 10 minutos depois de ligar e a cada 3 horas enquanto
-faltar algo, com `full-upgrade` de todos os repositórios mantendo as configurações da
+(o apt-daily fica desligado). Atualiza a cada 3 dias, logo depois de ligar (1 dia depois,
+se faltou algo), com `full-upgrade` de todos os repositórios mantendo as configurações da
 SEDUC; um pacote que o proxy barra fica para a próxima vez sem cancelar os outros. O
 resultado fica em `/var/lib/seduc-atualizar/status` (mostrado em "Atualizar o sistema"
 na Central) e o log em `/usr/local/seduc/logs/atualizacao_automatica.log`.

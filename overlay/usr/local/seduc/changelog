@@ -1,9 +1,10 @@
 ## 1.7-0 - 22/11/2026
     - Atualização automática nova (seduc-atualizar.timer e atualizar_pacotes.sh)
-      no lugar do unattended-upgrades: roda 10 minutos depois de ligar e a
-      cada 3 horas enquanto faltar alguma atualização (depois de completa,
-      espera 20 horas), com prioridade baixa para não pesar na aula e só na
-      tomada nos notebooks
+      no lugar do unattended-upgrades: a cada 3 dias, logo depois de ligar;
+      se faltar alguma atualização (rede ou proxy), tenta de novo no dia
+      seguinte. Nas verificações do timer (ao ligar e a cada 12 horas) só usa
+      a rede quando chega a hora. Prioridade baixa para não pesar na aula e só
+      na tomada nos notebooks
     - Atualiza todos os programas, de todos os repositórios, mantendo as
       configurações da SEDUC: os pacotes com configuração alterada (painel,
       tela de login, menu) que o unattended-upgrades pulava voltam a atualizar
@@ -15,7 +16,7 @@
       faz o mesmo nas máquinas já instaladas)
     - "Atualizar o sistema" usa o mesmo processo e a página da Central mostra
       a última atualização automática, o que ficou pendente e por quê
-      (seduc-central-suporte 1.2.5); o Coletar logs leva o log e o status
+      (seduc-central-suporte 1.2.6); o Coletar logs leva o log e o status
 
 ## 1.6-4 - 20/11/2026
     - Assinador Logus com o token mToken CryptoID: com o driver do CryptoID

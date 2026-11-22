@@ -1,13 +1,14 @@
 # SEDUC: atualização dos pacotes (atualizar_pacotes.sh), no lugar do unattended-upgrades.
-# Roda 10 minutos depois de ligar e a cada 3 horas; depois de uma atualização
-# completa, o script espera 20 horas. O atraso aleatório espalha os computadores
-# do laboratório para não baixarem todos ao mesmo tempo.
+# Verifica 10 minutos depois de ligar e a cada 12 horas ligado. O script só usa a rede
+# a cada 3 dias depois de uma atualização completa (1 dia depois de uma incompleta);
+# nas outras vezes só lê o status. O atraso aleatório espalha os computadores do
+# laboratório para não baixarem todos ao mesmo tempo.
 [Unit]
 Description=Atualização dos pacotes do sistema (SEDUC)
 
 [Timer]
 OnBootSec=10min
-OnUnitActiveSec=3h
+OnUnitActiveSec=12h
 RandomizedDelaySec=15min
 
 [Install]

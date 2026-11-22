@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Atualização dos pacotes do sistema (apt), no lugar do unattended-upgrades.
-#   atualizar_pacotes.sh --auto   pelo seduc-atualizar.timer (após ligar e a cada 3 h)
+#   atualizar_pacotes.sh --auto   pelo seduc-atualizar.timer (após ligar e a cada 12 h)
 #   atualizar_pacotes.sh          pelo "Atualizar o sistema" (atualizar_sistema_root.sh)
 #
 # O que o unattended-upgrades não fazia:
@@ -10,8 +10,9 @@
 # - um download barrado (proxy da SEDUC, repositório fora) não cancela o resto: o
 #   pacote fica para depois e os outros são instalados;
 # - conclui instalações interrompidas antes de começar;
-# - no --auto, depois de uma atualização completa espera 20 h; se faltou algo, tenta
-#   de novo na próxima vez do timer;
+# - no --auto, depois de uma atualização completa espera 3 dias; se faltou algo (rede,
+#   proxy), tenta de novo depois de 1 dia; interrompida pelo desligamento, no próximo
+#   boot. Fora desses horários o timer só lê o status, sem usar a rede;
 # - grava o resultado em $STATUS, que a Central do Suporte mostra.
 # Desligar o computador no meio: o download para; a instalação termina antes.
 #
@@ -28,7 +29,8 @@ STATUS="${SEDUC_ATUALIZAR_STATUS:-/var/lib/seduc-atualizar/status}"
 TRAVA="${SEDUC_ATUALIZAR_TRAVA:-/run/lock/seduc-atualizar.lock}"
 CACHE="${SEDUC_ATUALIZAR_CACHE:-/var/cache/apt/archives}"
 LOG="${SEDUC_ATUALIZAR_LOG:-/usr/local/seduc/logs/atualizacao_automatica.log}"
-INTERVALO_OK=$((20 * 3600))   # --auto: tempo depois de uma atualização completa
+INTERVALO_OK=$((3 * 86400))   # --auto: espera depois de uma atualização completa
+INTERVALO_FALHA=86400         # --auto: espera depois de uma atualização incompleta
 RODADAS=3                     # tentativas de download, separando os pacotes barrados
 APT=(apt-get -y -o DPkg::Lock::Timeout=1800
      -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold)
@@ -42,6 +44,7 @@ TRAVADOS=()
 FILHO=""
 INTERROMPIVEL=0
 PARAR=0
+INTERROMPIDA=0
 
 ###############
 ## FUNCTIONS ##
@@ -110,6 +113,7 @@ gravar_status() {
         echo "PENDENTES=${PENDENTES:-0}"
         echo "BLOQUEADOS=${BLOQUEADOS[*]:-}"
         echo "REINICIAR=$REINICIAR"
+        echo "INTERROMPIDA=$INTERROMPIDA"
         echo "ULTIMO_OK=$ULTIMO_OK"
         echo "ULTIMO_OK_DATA=$ULTIMO_OK_DATA"
     } > "$STATUS.tmp" && mv -f "$STATUS.tmp" "$STATUS"
@@ -194,10 +198,17 @@ if ! flock -n 9; then
 fi
 
 if (( AUTO )); then
+    AGORA=$(date +%s)
     ULTIMO_OK=$(ler_status ULTIMO_OK)
-    if [ "$(ler_status RESULTADO)" = ok ] && [[ "$ULTIMO_OK" =~ ^[0-9]+$ ]] &&
-        (( $(date +%s) - ULTIMO_OK < INTERVALO_OK )); then
-        echo "Sistema atualizado em $(ler_status ULTIMO_OK_DATA): nada a fazer agora."
+    ULTIMA=$(ler_status DATA)
+    if [ "$(ler_status RESULTADO)" = ok ]; then
+        if [[ "$ULTIMO_OK" =~ ^[0-9]+$ ]] && (( AGORA - ULTIMO_OK < INTERVALO_OK )); then
+            echo "Sistema atualizado em $(ler_status ULTIMO_OK_DATA): próxima verificação em 3 dias."
+            exit 0
+        fi
+    elif [ "$(ler_status INTERROMPIDA)" != 1 ] && [[ "$ULTIMA" =~ ^[0-9]+$ ]] &&
+        (( AGORA - ULTIMA < INTERVALO_FALHA )); then
+        echo "Última tentativa em $(ler_status DATA_TEXTO) incompleta: tenta de novo 1 dia depois."
         exit 0
     fi
     # Notebook na bateria: espera a tomada
@@ -241,6 +252,7 @@ fi
 
 if (( PARAR )); then
     PENDENTES=$(contar_pendentes)
+    INTERROMPIDA=1
     gravar_status erro "Interrompida pelo desligamento"
     exit 2
 fi
@@ -273,6 +285,7 @@ echo
 echo "Instalados: $INSTALADOS; pendentes: $PENDENTES${BLOQUEADOS[*]:+; não baixados: ${BLOQUEADOS[*]}}"
 
 if (( PARAR )) && (( PENDENTES > 0 )); then
+    INTERROMPIDA=1
     gravar_status erro "Interrompida pelo desligamento"
     exit 2
 elif (( ! ATUALIZOU_LISTA )); then
