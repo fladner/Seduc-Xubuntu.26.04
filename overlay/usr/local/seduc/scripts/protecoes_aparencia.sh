@@ -2,6 +2,7 @@
 
 # Proteções da aparência do computador inteiro (Central do Suporte, página aparencia):
 #   papel     xfce4_backdrop_monitor (serviço de usuário): devolve o papel de parede SEDUC
+#             na hora; Wallpaper Lock (autostart, xfce4_backdrop_default.sh): em cada login
 #   tema      seduc-trava-perfil (boot): devolve tema, ícones, janelas, atalhos, energia,
 #             idioma, painel e menu de todos os usuários
 #   painel    perfil laboratório: kiosk (CustomizePanel=NONE) e canal xfce4-panel travado
@@ -16,7 +17,7 @@
 
 set -uo pipefail
 
-SCRIPT_VERSION="1.7-1"
+SCRIPT_VERSION="1.7-2"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -62,26 +63,40 @@ estado() {
     fi
 }
 
-# Usuários com sessão gráfica aberta (gerenciador de serviços do usuário rodando)
-usuarios_logados() {
-    local D U
+# Sessões abertas: "UID usuário" de quem tem o gerenciador de serviços do usuário
+# rodando (usuários locais e do domínio; o lightdm e outros do sistema ficam de fora)
+sessoes() {
+    local D UID_ U
     for D in /run/user/[0-9]*; do
         [ -S "$D/bus" ] || continue
-        U=$(id -nu "${D##*/}" 2>/dev/null) || continue
-        echo "$U"
+        UID_="${D##*/}"
+        (( UID_ >= 1000 )) || continue
+        U=$(timeout 10 id -nu "$UID_" 2>/dev/null) || continue
+        echo "$UID_ $U"
     done
+}
+
+# systemctl --user como o próprio usuário, no barramento da sessão dele (sem o
+# systemd-machined, que a imagem não tem); no máximo 15 s por comando
+systemctl_usuario() {
+    local UID_="$1" U="$2"
+    shift 2
+    timeout 15 runuser -u "$U" -- env XDG_RUNTIME_DIR="/run/user/$UID_" \
+        DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$UID_/bus" systemctl --user "$@"
 }
 
 # monitor_sessoes stop|start: o papel de parede nas sessões abertas
 monitor_sessoes() {
-    local U
-    while read -r U; do
+    local UID_ U
+    while read -r UID_ U; do
         [ -n "$U" ] || continue
-        systemctl --user -M "$U@" daemon-reload 2>/dev/null || true
-        if systemctl --user -M "$U@" "$1" "$MONITOR" 2>/dev/null; then
+        systemctl_usuario "$UID_" "$U" daemon-reload >/dev/null 2>&1 || true
+        if systemctl_usuario "$UID_" "$U" "$1" "$MONITOR" >/dev/null 2>&1; then
             log "$U: $MONITOR $1"
+        else
+            log "$U: não foi possível $1 $MONITOR"
         fi
-    done < <(usuarios_logados)
+    done < <(sessoes)
 }
 
 liberar_painel() {
@@ -149,4 +164,6 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 mkdir -p "$(dirname "$LOG")"
+INICIO=$(date +%s)
 "$1"
+log "$1 concluído em $(( $(date +%s) - INICIO )) s"

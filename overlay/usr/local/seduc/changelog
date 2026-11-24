@@ -1,3 +1,12 @@
+## 1.7-2 - 24/11/2026
+    - Proteções da aparência: o papel de parede não voltava mais ao da SEDUC
+      no login seguinte depois de desligadas (o Wallpaper Lock do autostart,
+      xfce4_backdrop_default.sh, passa a respeitar a marca)
+    - Proteções da aparência: o monitor do papel de parede das sessões
+      abertas é parado e religado como o próprio usuário (runuser), também
+      para os usuários do domínio, com limite de 15 segundos por comando; o
+      log registra quanto tempo levou (protecoes_aparencia.sh)
+
 ## 1.7-1 - 24/11/2026
     - Central do Suporte: item "Proteções da aparência" (só administrador),
       que desliga e religa, para o computador inteiro, as proteções do papel
