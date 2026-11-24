@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ## VARIABLES
-SCRIPT_VERSION="1.7-2"
+SCRIPT_VERSION="1.7-3"
 SEDUC_DIR="/usr/local/seduc"
 LOG_FILE="$SEDUC_DIR/logs/seduc_setup.log"
 SCRIPT_PATH="$(readlink -f "$0")"
@@ -648,6 +648,28 @@ desligar_unattended_upgrades() {
     log "Atualização automática pelo seduc-atualizar.timer; apt-daily desligado"
 }
 
+## PAINEL NO MONITOR PRINCIPAL
+# Desde a 1.7-3 o painel padrão fica no monitor principal (output-name "Primary" no
+# default.xml do overlay). Nas máquinas que tiveram o perfil laboratório, o padrão do
+# painel é a cópia xfce4-panel.xml feita na época, que o trava_perfil.sh devolve a cada
+# boot: ela recebe o mesmo ajuste
+painel_monitor_principal() {
+
+    local XML="/etc/xdg/xdg-xubuntu/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml"
+
+    if [ ! -f "$XML" ] || grep -q 'name="output-name"' "$XML"; then
+        log "Painel do laboratório: nada a ajustar"
+        return 0
+    fi
+    sed -i '0,/<property name="position-locked"[^>]*>/s//&\n      <property name="output-name" type="string" value="Primary"\/>/' "$XML"
+    if grep -q 'name="output-name"' "$XML"; then
+        log "Painel do laboratório no monitor principal"
+    else
+        log_error "Não foi possível ajustar o painel do laboratório: $XML"
+        return 1
+    fi
+}
+
 ## GERENCIADOR DE USUÁRIOS
 # O perfil laboratório (aluno criado pelo Boas-vindas) removia o gnome-system-tools
 # ("Usuários e grupos") até a 1.4-1; devolve nas máquinas em que foi removido
@@ -756,6 +778,7 @@ main() {
     apply_patch_if_needed corrigir_logus || log_error "Assinador Logus pendente (próximo boot)"
     apply_patch_if_needed instalar_usuarios_grupos || log_error "Usuários e grupos pendente (próximo boot)"
     apply_patch_if_needed desligar_unattended_upgrades || log_error "Atualização automática pendente (próximo boot)"
+    apply_patch_if_needed painel_monitor_principal
 
     log "Script finalizado com sucesso."
 }
