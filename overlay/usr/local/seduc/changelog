@@ -1,3 +1,13 @@
+## 1.7-3 - 24/11/2026
+    - Painel no monitor principal: a saída do painel fica em "Primário",
+      acompanhando o monitor principal do usuário
+    - Área de trabalho: "Mostrar ícones apenas na tela principal" marcado
+    - Os usuários novos já nascem assim; os que já existiam recebem o ajuste
+      uma vez, no próximo login (monitor_principal.sh, autostart), e depois
+      podem mudar. Nas máquinas que tiveram o perfil laboratório, a cópia do
+      painel que a trava do perfil devolve no boot recebe o mesmo ajuste
+      (seduc_setup.sh)
+
 ## 1.7-2 - 24/11/2026
     - Proteções da aparência: o papel de parede não voltava mais ao da SEDUC
       no login seguinte depois de desligadas (o Wallpaper Lock do autostart,

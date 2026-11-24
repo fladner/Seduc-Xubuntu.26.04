@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Monitor principal SEDUC
+Comment=Painel e ícones da área de trabalho no monitor principal
+Exec=/usr/local/seduc/scripts/monitor_principal.sh
+NoDisplay=true
+OnlyShowIn=XFCE;
+X-GNOME-Autostart-enabled=true
