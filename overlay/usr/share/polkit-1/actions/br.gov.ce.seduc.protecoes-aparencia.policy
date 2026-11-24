@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<!-- Proteções da aparência (Central do Suporte): desligar ou religar as proteções do
+     papel de parede, do tema e do painel do laboratório, com a senha do administrador -->
+<policyconfig>
+  <vendor>SEDUC Ceará</vendor>
+  <action id="br.gov.ce.seduc.protecoes-aparencia">
+    <description>Proteções da aparência</description>
+    <message>Mudar as proteções da aparência precisa da senha do administrador</message>
+    <icon_name>preferences-desktop-theme</icon_name>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/local/seduc/scripts/protecoes_aparencia.sh</annotate>
+  </action>
+</policyconfig>

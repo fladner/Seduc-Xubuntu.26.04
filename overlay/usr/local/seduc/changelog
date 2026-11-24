@@ -1,3 +1,12 @@
+## 1.7-1 - 24/11/2026
+    - Central do Suporte: item "Proteções da aparência" (só administrador),
+      que desliga e religa, para o computador inteiro, as proteções do papel
+      de parede (xfce4_backdrop_monitor), do tema e da aparência (trava do
+      perfil a cada boot) e do painel do laboratório (kiosk e painel
+      travado). Pede a senha do administrador; desligadas, cada usuário
+      personaliza e o que mudar fica, até alguém religar
+      (protecoes_aparencia.sh e trava_perfil.sh)
+
 ## 1.7-0 - 22/11/2026
     - Atualização automática nova (seduc-atualizar.timer e atualizar_pacotes.sh)
       no lugar do unattended-upgrades: a cada 3 dias, logo depois de ligar;

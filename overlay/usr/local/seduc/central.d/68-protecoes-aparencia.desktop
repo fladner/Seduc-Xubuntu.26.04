@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Proteções da aparência
+Comment=Desliga ou religa as proteções do papel de parede, do tema e do painel
+Icon=preferences-desktop-theme
+Terminal=false
+X-SEDUC-Acesso=admin
+TryExec=/usr/local/seduc/scripts/protecoes_aparencia.sh
+X-SEDUC-Bash=aparencia

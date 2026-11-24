@@ -6,11 +6,13 @@
 # Baseado no trava-tema.sh (Carlos Renê - CREDE16 / Tadeu Fladiner - ASTIN).
 # A área de trabalho (xfce4-desktop) não é tocada: o papel de parede não muda
 # e fica com o xfce4_backdrop_monitor.
+# Desligado pela Central do Suporte ("Proteções da aparência"): com a marca
+# /usr/local/seduc/flags/aparencia-livre, não restaura nada.
 # Uso: trava_perfil.sh [raiz]   (raiz só para teste; padrão /)
 
 set -euo pipefail
 
-SCRIPT_VERSION="1.2-0"
+SCRIPT_VERSION="1.7-1"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -141,6 +143,11 @@ travar_usuario() {
 ##########
 if grep -q "casper" /proc/cmdline 2>/dev/null && [ -z "$RAIZ" ]; then
     echo "Ambiente Live detectado. Abortando..."
+    exit 0
+fi
+
+if [ -f "$RAIZ/usr/local/seduc/flags/aparencia-livre" ]; then
+    echo "Proteções da aparência desligadas pela Central do Suporte: nada restaurado"
     exit 0
 fi
 
