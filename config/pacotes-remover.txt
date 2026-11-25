@@ -2,3 +2,6 @@
 # Um por linha; linhas com # são ignoradas.
 # Desde a base 1.3-1 está vazia: Thunderbird e o Firefox do PPA mozillateam já
 # saíram, e o firefox instalado é o da Mozilla (não pode entrar aqui).
+# apt-xapian-index: o Synaptic do 26.04 (0.91.6 em diante) é compilado sem a libept e
+# não usa mais o índice; ele só ocupava ~76 MB e reconstruía o índice toda segunda
+apt-xapian-index

@@ -3,7 +3,6 @@
 hplip-gui
 seduc-netmonitor-agent
 synaptic
-apt-xapian-index
 anydesk
 firefox
 firefox-l10n-pt-br

@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ## VARIABLES
-SCRIPT_VERSION="1.7-4"
+SCRIPT_VERSION="1.7-5"
 SEDUC_DIR="/usr/local/seduc"
 LOG_FILE="$SEDUC_DIR/logs/seduc_setup.log"
 SCRIPT_PATH="$(readlink -f "$0")"

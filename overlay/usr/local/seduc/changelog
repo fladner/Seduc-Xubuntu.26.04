@@ -1,3 +1,11 @@
+## 1.7-5 - 24/11/2026
+    - Removido o apt-xapian-index: o Synaptic do Ubuntu 26.04 é compilado sem a
+      libept e não tem mais a busca rápida, então o índice não servia para nada;
+      ocupava cerca de 76 MB e era reconstruído toda segunda. No Synaptic, a
+      busca continua pelo botão Pesquisar (Ctrl+F). As máquinas instaladas
+      removem o pacote no atualizador (pacotes-remover.txt)
+    - seduc_setup.sh 1.7-5: versão para levar a remoção às máquinas
+
 ## 1.7-4 - 24/11/2026
     - Central do Suporte 1.2.7: a janela não abre e fecha mais depois de um
       programa aberto como root na sessão (Synaptic com sudo, por exemplo). A
