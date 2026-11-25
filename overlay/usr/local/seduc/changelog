@@ -1,3 +1,10 @@
+## 1.7-4 - 24/11/2026
+    - Central do Suporte 1.2.7: a janela não abre e fecha mais depois de um
+      programa aberto como root na sessão (Synaptic com sudo, por exemplo). A
+      janela usa a acessibilidade da sessão do próprio usuário, não a do root
+      anunciada na tela, e, se mesmo assim cair, a Central abre no Chrome
+    - seduc_setup.sh 1.7-4: versão para levar a Central 1.2.7 às máquinas
+
 ## 1.7-3 - 24/11/2026
     - Painel no monitor principal: a saída do painel fica em "Primário",
       acompanhando o monitor principal do usuário
