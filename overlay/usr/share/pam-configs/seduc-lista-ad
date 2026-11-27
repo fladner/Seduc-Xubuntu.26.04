@@ -1,0 +1,7 @@
+Name: Usuarios do AD na tela de login (SEDUC)
+Default: no
+Priority: 0
+Session-Type: Additional
+Session-Interactive-Only: yes
+Session:
+	optional	pam_exec.so quiet /usr/local/seduc/scripts/lista_login_ad.sh registrar

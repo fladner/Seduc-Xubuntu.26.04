@@ -3,10 +3,12 @@ Pacote seduc-ad-sige: Active Directory, impressoras e SIGE nos sabores do Ubuntu
 Gerar (sem root, usa overlay/ e debs/instaladores/):
     ./empacotar_deb.sh
 
-Instalar na máquina (o wine32 é de 32 bits e precisa da arquitetura i386 antes):
+Instalar na máquina, junto com a Central do Suporte (debs/seduc-central-suporte_*.deb),
+que mostra o Active Directory e as impressoras (o wine32 é de 32 bits e precisa da
+arquitetura i386 antes):
     sudo dpkg --add-architecture i386
     sudo apt update
-    sudo DEBIAN_FRONTEND=noninteractive apt install ./seduc-ad-sige_<versão>_amd64.deb
+    sudo DEBIAN_FRONTEND=noninteractive apt install ./seduc-central-suporte_<versão>_amd64.deb ./seduc-ad-sige_<versão>_amd64.deb
 
 Só para Ubuntu 26.04 e sabores: em versões antigas o apt recusa o pacote, porque
 o Samba muda o caminho do wrapper de impressão. Na ISO Xubuntu SEDUC não é preciso,
@@ -16,4 +18,4 @@ O pacote leva sige.conf e os endereços dos servidores: é de uso interno, não
 publique em release ou repositório público.
 
 Remover o pacote não tira a máquina do domínio: antes use "Sair do domínio" no
-painel Active Directory SEDUC.
+item Active Directory SEDUC da Central do Suporte.

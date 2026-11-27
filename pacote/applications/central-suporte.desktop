@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Central do Suporte SEDUC
+Comment=Active Directory, impressoras e SIGE da SEDUC
+Exec=central-suporte
+Icon=seduc-logo
+Terminal=false
+Categories=SEDUC;
+StartupNotify=true

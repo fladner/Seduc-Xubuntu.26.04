@@ -8,7 +8,7 @@
 # Sem "set -e": em script de interface um erro não pode fechar a janela sem aviso.
 set -uo pipefail
 
-SCRIPT_VERSION="1.5-0"
+SCRIPT_VERSION="1.7-6"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -64,12 +64,18 @@ nome_cups() {
     echo "SEDUC-$(echo "$1" | tr -c 'A-Za-z0-9_-' '_' | sed 's/_*$//')"
 }
 
+# Filas do CUPS lidas uma vez só: o lpstat pode levar 1 s por chamada, e uma chamada por
+# impressora do servidor passava do limite de 30 s da Central do Suporte
+INSTALADAS=""
+ler_instaladas() { INSTALADAS=$(lpstat -e 2>/dev/null); }
+
 instalada() {
-    lpstat -p "$(nome_cups "$1")" >/dev/null 2>&1
+    grep -qxF "$(nome_cups "$1")" <<< "$INSTALADAS"
 }
 
 escolher() {
     local FILAS="$1" LINHAS=() FILA DESC SITUACAO
+    ler_instaladas
     while IFS='|' read -r FILA DESC; do
         [[ -n "$FILA" ]] || continue
         SITUACAO=""
@@ -107,6 +113,7 @@ listar() {
         echo "ERRO|Não foi possível listar as impressoras de $IMPRESSORA_SERVIDOR. Confira se está na rede SEDUC."
         return 0
     fi
+    ler_instaladas
     while IFS='|' read -r FILA DESC; do
         [[ -n "$FILA" ]] || continue
         instalada "$FILA" && echo "FILA|$FILA|$DESC|1" || echo "FILA|$FILA|$DESC|0"

@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# Antes de remover o pacote: tira a lista de usuários do AD da tela de login (perfil do
+# PAM, nsswitch e SDDM), que dependem do script do pacote.
+
+set -e
+
+case "$1" in
+    remove|purge)
+        [ -x /usr/local/seduc/scripts/lista_login_ad.sh ] &&
+            /usr/local/seduc/scripts/lista_login_ad.sh desligar || true
+        ;;
+esac
+
+exit 0

@@ -1,3 +1,36 @@
+## 1.7-6 - 27/11/2026
+    - Boas-vindas: opção "Não mostrar mais ao entrar no computador" para o
+      administrador, na página da Central do Suporte (1.2.9) e no botão "Não
+      mostrar mais" da tela antiga; a escolha é de cada administrador e a tela
+      continua na Central, em Boas-vindas e usuários (welcome.sh)
+    - Impressoras SEDUC: a lista não aparecia em algumas máquinas ("Não foi
+      possível consultar as impressoras"). O painel perguntava ao CUPS, uma
+      impressora por vez, se ela já estava instalada; onde cada pergunta leva
+      1 s, a lista do servidor passava de 1 minuto e a Central desistia em 30 s.
+      Agora o CUPS é consultado uma vez só (painel_impressora_ad.sh)
+    - Active Directory: o winbind não lista mais todos os usuários e grupos do
+      AD (winbind enum users/groups = no). No Kubuntu, a tela de login (SDDM)
+      ficava preta depois do ingresso, montando a lista com milhares de contas.
+      O login, o getent de um usuário e os grupos continuam iguais. As máquinas
+      já no domínio recebem o ajuste no atualizador (seduc_setup.sh) e no .deb
+    - Active Directory: as pastas do servidor marcadas para todos (sige, Sige5,
+      Temporario, netlogon) passam a ser montadas só para os usuários do
+      domínio. O usuário local e a própria tela de login também tentavam
+      montá-las e, com o servidor fora de alcance, esperavam o tempo limite de
+      cada pasta. As máquinas já no domínio recebem o ajuste no atualizador e
+      no .deb
+    - Kubuntu (tela de login SDDM): os usuários do AD que já entraram no
+      computador aparecem na lista da tela de login; o primeiro login continua
+      pela opção de outro usuário. A lista é local (libnss-extrausers), só com
+      quem já entrou, e a senha continua conferida no domínio
+      (lista_login_ad.sh, ligado no ingresso e pelo .deb)
+    - Pacote do AD para os sabores do Ubuntu (seduc-ad-sige): o Active
+      Directory e as Impressoras SEDUC abrem na Central do Suporte em web, como
+      no Xubuntu SEDUC, no lugar das janelas antigas; a Central também tem o SIGE
+      e o SIGE Remoto. O pacote passa a depender do seduc-central-suporte, e o
+      cabeçalho da Central mostra o nome do sistema (ex.: Kubuntu 26.04 LTS)
+    - seduc_setup.sh 1.7-6: versão para levar a mudança às máquinas
+
 ## 1.7-5 - 24/11/2026
     - Removido o apt-xapian-index: o Synaptic do Ubuntu 26.04 é compilado sem a
       libept e não tem mais a busca rápida, então o índice não servia para nada;

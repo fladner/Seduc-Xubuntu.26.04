@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Active Directory SEDUC
+Comment=Ingressa o computador no domínio SEDUC (login, pastas do servidor e impressora)
+Exec=central-suporte --abrir ad
+Icon=network-workgroup
+Terminal=false
+Categories=SEDUC;
+StartupNotify=true

@@ -17,8 +17,8 @@ Conferir:  sha256sum *.deb
 
 Central do Suporte em web (repositório fladner/central-suporte, compilado do
 código; o pacote/empacotar.sh gera o .deb e o pacote de entrega com o incorporar.sh):
-  seduc-central-suporte_1.2.7_amd64.deb
-             511f2cf6dcf6d463d00087afc782b4c9773f609cc9aef603d21e41fa00affa89
+  seduc-central-suporte_1.2.9_amd64.deb
+             c312b9203b9f304dde7602733559f0236bf014c69f14db1f3da0d91f37b564dd
 
 Web PKI (Lacuna) - componente nativo, instalado no build:
   https://get.webpkiplugin.com/Downloads/2.16.1/setup-deb-64

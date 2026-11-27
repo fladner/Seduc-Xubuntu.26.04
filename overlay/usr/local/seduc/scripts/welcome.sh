@@ -3,7 +3,7 @@
 # Sem "set -e": em script de interface um erro não pode fechar a janela sem aviso.
 set -uo pipefail
 
-SCRIPT_VERSION="1.6-1"
+SCRIPT_VERSION="1.7-6"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -26,6 +26,10 @@ USUARIOS=(
     "gremio|Grêmio|Apoio"
 )
 
+# O administrador que marcou "Não mostrar mais ao entrar": a tela não abre mais no
+# login dele (pela Central do Suporte continua abrindo)
+OCULTA="${XDG_CONFIG_HOME:-$HOME/.config}/seduc/boas-vindas-oculta"
+
 AMBIENTES="/usr/local/seduc/ambientes.conf"
 IDENTIFICACAO="/usr/local/seduc/identificacao.conf"
 API_INEP="https://api.simet.nic.br/educacao-conectada/inep-service/school-by-inep"
@@ -47,12 +51,20 @@ if [ "${1:-}" = "--inep" ]; then
     exit 0
 fi
 
+# --ocultar / --mostrar: liga e desliga a abertura no login (Central do Suporte em web)
+case "${1:-}" in
+    --ocultar) mkdir -p "$(dirname "$OCULTA")" && date '+%F %T' > "$OCULTA"; exit $? ;;
+    --mostrar) rm -f "$OCULTA"; exit $? ;;
+esac
+
 # --listar: para a Central do Suporte em web (antes do log, que toma a saída padrão).
 # Uma linha por informação, separada por "|":
 #   LIVE | ERRO|<texto> | SISTEMA|<nome> | USUARIO|<login>|<nome>|<grupo>|<1 se já existe>
 #   AMBIENTE|<escola|crede>|<sigla>|<nome> | IDENT|<tipo>|<INEP>|<CREDE>|<ambiente>|<escola>|<computador>
+#   OCULTA (o administrador marcou "Não mostrar mais ao entrar")
 if [ "${1:-}" = "--listar" ]; then
     grep -q "casper" /proc/cmdline && echo "LIVE"
+    [ -f "$OCULTA" ] && echo "OCULTA"
     if ! id -nG | tr ' ' '\n' | grep -qx sudo; then
         echo "ERRO|Só o administrador local do computador (grupo sudo) cria os usuários."
         exit 0
@@ -104,6 +116,14 @@ check_flag() {
     fi
 }
 
+# O administrador marcou "Não mostrar mais ao entrar"
+check_oculta() {
+    if [ -f "$OCULTA" ]; then
+        echo "Boas-vindas oculta por este administrador ($OCULTA). Saindo..."
+        exit 0
+    fi
+}
+
 # Só o administrador (grupo sudo) configura o computador
 check_admin() {
     if ! id -nG | tr ' ' '\n' | grep -qx sudo; then
@@ -127,7 +147,16 @@ Este é o Linux da Secretaria de Educação - SEDUC, baseado no <b>Xubuntu 26.04
 Agora vamos preparar este computador para uso: na próxima tela você escolhe quais usuários serão criados nele.
 
 Clique em <b>Avançar</b> para continuar." \
-        --button="Sair:1" --button="Avançar:0"
+        --button="Não mostrar mais:2" --button="Sair:1" --button="Avançar:0"
+    local R=$?
+    if [ "$R" -eq 2 ]; then
+        mkdir -p "$(dirname "$OCULTA")" && date '+%F %T' > "$OCULTA"
+        echo "Administrador escolheu não mostrar mais ao entrar"
+        yad --info --title="Boas-vindas" --center --borders=10 --button="OK:0" \
+            --text="A tela de boas-vindas não vai mais abrir quando você entrar.\n\nPara criar os usuários depois, use a Central do Suporte > Boas-vindas e usuários."
+        return 1
+    fi
+    return "$R"
 }
 
 # Lista os usuários e devolve os logins marcados, um por linha
@@ -220,6 +249,7 @@ CENTRAL=0
 
 check_live
 (( CENTRAL )) || check_flag
+(( CENTRAL )) || check_oculta
 if (( CENTRAL )) && ! id -nG | tr ' ' '\n' | grep -qx sudo; then
     yad --info --title="Boas-vindas e usuários" --center --borders=10 --button="OK:0" \
         --text="Só o administrador local do computador (grupo sudo) cria os usuários."

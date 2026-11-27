@@ -11,7 +11,7 @@
 
 set -uo pipefail
 
-SCRIPT_VERSION="1.3-0"
+SCRIPT_VERSION="1.7-6"
 
 #####################
 ## VARIABLE GLOBAL ##
@@ -23,6 +23,7 @@ SUDOERS="/etc/sudoers.d/seduc-ad"
 LIGHTDM="/etc/lightdm/lightdm.conf"
 TIMESYNC="/etc/systemd/timesyncd.conf.d/seduc-ad.conf"
 CHRONY_FONTE="/etc/chrony/sources.d/seduc-ad.sources"
+LISTA_LOGIN="/usr/local/seduc/scripts/lista_login_ad.sh"
 
 # shellcheck source=/dev/null
 . "$AD_DIR/ad.conf"
@@ -126,7 +127,13 @@ tela_login() {
             relatorio "Tela de login" "GDM: use a opção abaixo da lista de usuários para digitar o usuário do domínio"
             ;;
         sddm)
-            relatorio "Tela de login" "SDDM: use a opção de outro usuário para digitar o usuário do domínio"
+            # O SDDM só lista quem o getpwent devolve: os usuários do AD que já entraram
+            # aqui vão para a lista local (lista_login_ad.sh)
+            if [ -x "$LISTA_LOGIN" ] && "$LISTA_LOGIN" ligar; then
+                relatorio "Tela de login" "SDDM: no primeiro login use a opção de outro usuário; depois o usuário do domínio aparece na lista"
+            else
+                relatorio "Tela de login" "SDDM: use a opção de outro usuário para digitar o usuário do domínio"
+            fi
             ;;
         *)
             relatorio "Tela de login" "gerenciador não reconhecido (${GERENTE:-nenhum}): confira se ele permite digitar o usuário"
@@ -221,6 +228,7 @@ sair() {
     unset SENHA
 
     progresso 50 "Desativando o login do domínio..."
+    [ -x "$LISTA_LOGIN" ] && "$LISTA_LOGIN" desligar
     DEBIAN_FRONTEND=noninteractive pam-auth-update --remove winbind libpam-mount
     nsswitch_winbind off
     systemctl disable --now winbind || true

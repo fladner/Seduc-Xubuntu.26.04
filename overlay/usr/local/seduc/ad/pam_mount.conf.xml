@@ -2,11 +2,15 @@
 <!DOCTYPE pam_mount SYSTEM "pam_mount.conf.xml.dtd">
 <pam_mount>
 
+<!-- Só os usuários do domínio montam as pastas: uid é a faixa do idmap do smb.conf.
+     Com user="*", o login de usuário local e a tela de login (sddm, lightdm) também
+     tentavam montar e esperavam o tempo limite quando o servidor não respondia. -->
+
 <!--#### Para TODOS ####-->
-<volume options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/mnt/sige" server="fileserver.seduc.ce.gov.br" path="sige" fstype="cifs" />
-<volume options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8,noserverino" user="*" mountpoint="/mnt/sige5" server="fileserver.seduc.ce.gov.br" path="Sige5" fstype="cifs" />
-<volume options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/Área de Trabalho/Temporario (X:)" server="fileserver.seduc.ce.gov.br" path="Temporario" fstype="cifs" />
-<volume options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/.local/.netlogon" server="sedsrv1037.seduc.ce.gov.br" path="netlogon\AvisoTela" fstype="cifs" /> 
+<volume options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/mnt/sige" server="fileserver.seduc.ce.gov.br" path="sige" fstype="cifs" />
+<volume options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8,noserverino" uid="1000000-19999999" mountpoint="/mnt/sige5" server="fileserver.seduc.ce.gov.br" path="Sige5" fstype="cifs" />
+<volume options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/Área de Trabalho/Temporario (X:)" server="fileserver.seduc.ce.gov.br" path="Temporario" fstype="cifs" />
+<volume options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/.local/.netlogon" server="sedsrv1037.seduc.ce.gov.br" path="netlogon\AvisoTela" fstype="cifs" /> 
 
 <!--#### ASTIN ####-->
 <volume options="dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" mountpoint="/home/%(USER)/Área de Trabalho/Informatica (G:)" server="sedsrv1047.seduc.ce.gov.br" path="astin$" fstype="cifs"> <or> <sgrp>astin_desenvolvimento</sgrp> <or> <sgrp>astin_aquisicoes</sgrp> <or> <sgrp>astin_suporte</sgrp> <or> <sgrp>astin_recepcao</sgrp> <or> <sgrp>astin_atendimento</sgrp> <or> <sgrp>astin_manutencao</sgrp> </or> </or> </or> </or> </or> </or> </volume>
@@ -57,7 +61,7 @@
 <volume path="Concremat" options="uid=%(USER),gid=%(GROUP),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" mountpoint="/home/%(USER)/Área de Trabalho/Concremat (T:)" server="sedsrv1047.seduc.ce.gov.br" fstype="cifs"> <or><sgrp>g_concremat</sgrp> </or></volume>
 
 <!--#### Financeiro ####-->
-<volume sgrp="g_financeiro" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/Área de Trabalho/Financeiro (G:)" server="sedsrv1047.seduc.ce.gov.br" path="Financeiro" fstype="cifs" />
+<volume sgrp="g_financeiro" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/Área de Trabalho/Financeiro (G:)" server="sedsrv1047.seduc.ce.gov.br" path="Financeiro" fstype="cifs" />
 <!--## NOVA ESTRUTURA###-->
 <!--## copat###-->
 <volume path="copat$" options="uid=%(USER),gid=%(GROUP),dir_mode=0777,file_mode=0777,nosuid,nodev,nounix,nobrl,iocharset=utf8" mountpoint="/home/%(USER)/Área de Trabalho/Copat (G:)" server="sedsrv1047.seduc.ce.gov.br" fstype="cifs"> <or> <sgrp>g_copat</sgrp> </or> </volume>
@@ -84,17 +88,17 @@
 
 <!--#### SEFOR ####-->
 <volume path="sefor$" options="uid=%(USER),gid=%(GROUP),dir_mode=0777,file_mode=0777,nosuid,nodev,nounix,nobrl,iocharset=utf8" mountpoint="/home/%(USER)/Área de Trabalho/Sefor (G:)" server="sedsrv1047.seduc.ce.gov.br" fstype="cifs"> <or> <sgrp>g_cegep</sgrp> <or> <sgrp>g_cegaf</sgrp> <or> <sgrp>g_cedea</sgrp> <or> <sgrp>g_gab_sefor</sgrp> <or> <sgrp>suporte_sefor</sgrp> <or> <sgrp>g_sead_sige</sgrp> </or> </or> </or> </or></or> </or> </volume>
-<volume sgrp="g_sefor_admfin" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/Área de Trabalho/Adm-Financeiro (G:)" server="sedsrv1047.seduc.ce.gov.br" path="AdmFinanceiro" fstype="cifs" />
-<volume sgrp="g_sefor_apoio" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/Área de Trabalho/Apoio (G:)" server="sedsrv1047.seduc.ce.gov.br" path="Apoio" fstype="cifs" />
-<volume sgrp="g_sefor_assessoria" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/Área de Trabalho/Assessoria (G:)" server="sedsrv1047.seduc.ce.gov.br" path="Assessoria" fstype="cifs" />
-<volume sgrp="g_sefor2" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/Área de Trabalho/SEFOR2 (G:)" server="sedsrv1047.seduc.ce.gov.br" path="Sefor2" fstype="cifs" />
-<volume sgrp="g_sefor_nte" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/Área de Trabalho/NTE (G:)" server="sedsrv1047.seduc.ce.gov.br" path="NTE" fstype="cifs" />
-<volume sgrp="g_sefor_1r" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/Área de Trabalho/1a Regiao (G:)" server="sedsrv1047.seduc.ce.gov.br" path="1regiao" fstype="cifs" />
-<volume sgrp="g_sefor_2r" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/Área de Trabalho/2a Regiao (G:)" server="sedsrv1047.seduc.ce.gov.br" path="2regiao" fstype="cifs" />
-<volume sgrp="g_sefor_3r" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/Área de Trabalho/3a Regiao (G:)" server="sedsrv1047.seduc.ce.gov.br" path="3regiao" fstype="cifs" />
-<volume sgrp="g_sefor_4r" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/Área de Trabalho/4a Regiao (G:)" server="sedsrv1047.seduc.ce.gov.br" path="4regiao" fstype="cifs" />
-<volume sgrp="g_sefor_5r" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/Área de Trabalho/5a Regiao (G:)" server="sedsrv1047.seduc.ce.gov.br" path="5regiao" fstype="cifs" />
-<volume sgrp="g_sefor_6r" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" user="*" mountpoint="/home/%(USER)/Área de Trabalho/6a Regiao (G:)" server="sedsrv1047.seduc.ce.gov.br" path="6regiao" fstype="cifs" />
+<volume sgrp="g_sefor_admfin" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/Área de Trabalho/Adm-Financeiro (G:)" server="sedsrv1047.seduc.ce.gov.br" path="AdmFinanceiro" fstype="cifs" />
+<volume sgrp="g_sefor_apoio" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/Área de Trabalho/Apoio (G:)" server="sedsrv1047.seduc.ce.gov.br" path="Apoio" fstype="cifs" />
+<volume sgrp="g_sefor_assessoria" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/Área de Trabalho/Assessoria (G:)" server="sedsrv1047.seduc.ce.gov.br" path="Assessoria" fstype="cifs" />
+<volume sgrp="g_sefor2" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/Área de Trabalho/SEFOR2 (G:)" server="sedsrv1047.seduc.ce.gov.br" path="Sefor2" fstype="cifs" />
+<volume sgrp="g_sefor_nte" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/Área de Trabalho/NTE (G:)" server="sedsrv1047.seduc.ce.gov.br" path="NTE" fstype="cifs" />
+<volume sgrp="g_sefor_1r" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/Área de Trabalho/1a Regiao (G:)" server="sedsrv1047.seduc.ce.gov.br" path="1regiao" fstype="cifs" />
+<volume sgrp="g_sefor_2r" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/Área de Trabalho/2a Regiao (G:)" server="sedsrv1047.seduc.ce.gov.br" path="2regiao" fstype="cifs" />
+<volume sgrp="g_sefor_3r" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/Área de Trabalho/3a Regiao (G:)" server="sedsrv1047.seduc.ce.gov.br" path="3regiao" fstype="cifs" />
+<volume sgrp="g_sefor_4r" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/Área de Trabalho/4a Regiao (G:)" server="sedsrv1047.seduc.ce.gov.br" path="4regiao" fstype="cifs" />
+<volume sgrp="g_sefor_5r" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/Área de Trabalho/5a Regiao (G:)" server="sedsrv1047.seduc.ce.gov.br" path="5regiao" fstype="cifs" />
+<volume sgrp="g_sefor_6r" options="uid=%(USER),dir_mode=0755,file_mode=0755,nosuid,nodev,nounix,nobrl,iocharset=utf8" uid="1000000-19999999" mountpoint="/home/%(USER)/Área de Trabalho/6a Regiao (G:)" server="sedsrv1047.seduc.ce.gov.br" path="6regiao" fstype="cifs" />
 
 <debug enable="0" />
 <mediaoptions allow="*" />

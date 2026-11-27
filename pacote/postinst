@@ -12,10 +12,30 @@ case "$1" in
     configure)
         install -d -o root -g adm -m 2775 "$SEDUC/logs"
 
+        # Ingressos antigos enumeravam todos os usuários do AD: a tela de login do SDDM
+        # (Kubuntu) travava e o AccountsService atrasava
+        if grep -qiE '^[[:space:]]*winbind enum (users|groups)[[:space:]]*=[[:space:]]*yes' /etc/samba/smb.conf 2>/dev/null; then
+            sed -i -E 's/^([[:space:]]*winbind enum (users|groups)[[:space:]]*=[[:space:]]*)yes/\1no/I' /etc/samba/smb.conf
+            if systemctl is-active --quiet winbind; then
+                smbcontrol winbindd reload-config >/dev/null 2>&1 || systemctl restart winbind || true
+            fi
+        fi
+
+        # Pastas "para todos" do pam_mount só para os usuários do AD (usuário local e tela
+        # de login esperavam o tempo limite com o servidor fora de alcance)
+        if grep -q 'sedsrv1047' /etc/security/pam_mount.conf.xml 2>/dev/null &&
+           grep -q ' user="\*"' /etc/security/pam_mount.conf.xml; then
+            sed -i 's/ user="\*"/ uid="1000000-19999999"/g' /etc/security/pam_mount.conf.xml
+        fi
+
         if ! grep -qiE '^[[:space:]]*security[[:space:]]*=[[:space:]]*ads' /etc/samba/smb.conf 2>/dev/null; then
             systemctl disable --now winbind.service 2>/dev/null || true
             DEBIAN_FRONTEND=noninteractive pam-auth-update --remove winbind libpam-mount || true
             sed -i -E '/^(passwd|group):/ s/[[:space:]]+winbind//g' /etc/nsswitch.conf
+        else
+            # Já no domínio: no Kubuntu (SDDM), os usuários do AD que entrarem aqui passam a
+            # aparecer na tela de login (só faz algo com o SDDM)
+            "$SEDUC/scripts/lista_login_ad.sh" ligar || true
         fi
         ;;
 esac

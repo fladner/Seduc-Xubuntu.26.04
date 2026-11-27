@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Impressoras SEDUC
+Comment=Instala as impressoras do servidor SEDUC (para usuários do domínio)
+Exec=central-suporte --abrir impressoras
+Icon=printer
+Terminal=false
+Categories=SEDUC;
+StartupNotify=true
