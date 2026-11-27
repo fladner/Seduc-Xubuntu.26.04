@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ## VARIABLES
-SCRIPT_VERSION="1.7-5"
+SCRIPT_VERSION="1.7-6"
 SEDUC_DIR="/usr/local/seduc"
 LOG_FILE="$SEDUC_DIR/logs/seduc_setup.log"
 SCRIPT_PATH="$(readlink -f "$0")"
@@ -695,6 +695,38 @@ instalar_usuarios_grupos() {
 }
 
 ## PATCH (HASH)
+# Máquinas já no domínio: o smb.conf do ingresso enumerava todos os usuários do AD,
+# o que trava a tela de login do SDDM e atrasa o AccountsService (1.7-6)
+winbind_sem_enumerar() {
+
+    local CONF="/etc/samba/smb.conf"
+
+    if ! grep -qiE '^[[:space:]]*winbind enum (users|groups)[[:space:]]*=[[:space:]]*yes' "$CONF" 2>/dev/null; then
+        log "Winbind: nada a ajustar na enumeração"
+        return 0
+    fi
+    sed -i -E 's/^([[:space:]]*winbind enum (users|groups)[[:space:]]*=[[:space:]]*)yes/\1no/I' "$CONF"
+    if systemctl is-active --quiet winbind; then
+        smbcontrol winbindd reload-config >/dev/null 2>&1 || systemctl restart winbind || true
+    fi
+    log "Winbind: enumeração dos usuários e grupos do AD desligada"
+}
+
+# Máquinas já no domínio: as pastas "para todos" do pam_mount também eram montadas
+# para os usuários locais e para a tela de login, que esperavam o tempo limite quando o
+# servidor não respondia; ficam só para os usuários do AD (faixa do idmap) (1.7-6)
+pam_mount_so_dominio() {
+
+    local CONF="/etc/security/pam_mount.conf.xml"
+
+    if ! grep -q 'sedsrv1047' "$CONF" 2>/dev/null || ! grep -q ' user="\*"' "$CONF"; then
+        log "pam_mount: nada a ajustar"
+        return 0
+    fi
+    sed -i 's/ user="\*"/ uid="1000000-19999999"/g' "$CONF"
+    log "pam_mount: pastas do servidor só para os usuários do AD"
+}
+
 apply_patch_if_needed() {
 
     local FUNC_NAME="$1"
@@ -779,6 +811,8 @@ main() {
     apply_patch_if_needed instalar_usuarios_grupos || log_error "Usuários e grupos pendente (próximo boot)"
     apply_patch_if_needed desligar_unattended_upgrades || log_error "Atualização automática pendente (próximo boot)"
     apply_patch_if_needed painel_monitor_principal
+    apply_patch_if_needed winbind_sem_enumerar
+    apply_patch_if_needed pam_mount_so_dominio
 
     log "Script finalizado com sucesso."
 }
